@@ -49,6 +49,7 @@ module axi4_ctrl
     parameter MEM_OFFSET        = (DATA_W/8),       // Address mapping - OFFSET ---> Address (byte-access) = (base + offset*n)
     parameter MEM_DATA_W        = DATA_W,           // Memory's data width
     parameter MEM_ADDR_W        = 10,               // Memory's address width
+    parameter MEM_SIZE          = 1<<MEM_ADDR_W,    // Memory size
     parameter MEM_LATENCY       = 1,                // Memory latency
     // AXI4 (write-data-streaming segment) Interface
     parameter ST_WR_BASE_ADDR   = 32'h2100_0000,    // Address mapping - BASE
@@ -530,7 +531,16 @@ if(AXI4_CTRL_MEM == 1) begin    : AXI4_MEM
     assign mem_wr_addr_o    = mem_wr_addr[MEM_ADDR_W-1:0];
     assign mem_wr_vld_o     = mem_wr_en & mem_aw_map_vld;   // If the current address is in Memory region, write enable. "mem_wr_en" still asserts when the address is invalid (to skip WDATA)
     assign mem_wr_addr      = fwd_awaddr + (wdata_cnt<<(MEM_OFFSET-1) & wdata_cnt_msk);
-    assign mem_aw_map_vld   = ~|(mem_wr_addr[ADDR_W:MEM_ADDR_W] ^ {1'b0, MEM_BASE_ADDR[ADDR_W-1:MEM_ADDR_W]}); // Check if the AWADDR address is in the memory address range (compare the upper bit)
+    if(MEM_SIZE == (1<<MEM_ADDR_W)) begin : SIZE_ALIGN  // Mem size is power-of-two aligned -> Higher speed logic
+        assign mem_aw_map_vld   = ~|((mem_wr_addr[ADDR_W-1:0] - MEM_BASE_ADDR) & {{(ADDR_W-MEM_ADDR_W){1'b1}}, {MEM_ADDR_W{1'b0}}}); // Check if the AWADDR address is in the memory address range (compare the upper bit)
+        assign mem_rd_addr_vld  = ~|((mem_rd_addr[ADDR_W-1:0] - MEM_BASE_ADDR) & {{(ADDR_W-MEM_ADDR_W){1'b1}}, {MEM_ADDR_W{1'b0}}}); // Check if the current ARADDR address is in the memory address range (compare the upper bit)
+        assign mem_ar_map_vld   = ~|((bwd_rd_addr[ADDR_W-1:0] - MEM_BASE_ADDR) & {{(ADDR_W-MEM_ADDR_W){1'b1}}, {MEM_ADDR_W{1'b0}}}); // Check if the delay ARADDR address is in the memory address range (compare the upper bit)
+    end
+    else begin : SIZE_MISALIGN // Mem size is NOT power-of-two aligned -> Slower speed logic
+        assign mem_aw_map_vld   = (mem_wr_addr[ADDR_W-1:0] >= MEM_BASE_ADDR) && (mem_wr_addr[ADDR_W-1:0] < (MEM_BASE_ADDR + MEM_SIZE));
+        assign mem_rd_addr_vld  = (mem_rd_addr[ADDR_W-1:0] >= MEM_BASE_ADDR) && (mem_rd_addr[ADDR_W-1:0] < (MEM_BASE_ADDR + MEM_SIZE));
+        assign mem_ar_map_vld   = (bwd_rd_addr[ADDR_W-1:0] >= MEM_BASE_ADDR) && (bwd_rd_addr[ADDR_W-1:0] < (MEM_BASE_ADDR + MEM_SIZE));
+    end
     assign mem_wr_rdy       = mem_wr_rdy_i;
     // -- READ handle
     assign mem_rd_addr_o    = mem_rd_addr[MEM_ADDR_W-1:0];
@@ -540,8 +550,6 @@ if(AXI4_CTRL_MEM == 1) begin    : AXI4_MEM
     assign bwd_rd_addr      = fwd_araddr + (rdata_cnt & rdata_cnt_msk);
     assign mem_rd_ofs_exc   = ~|(mem_rd_ofs ^ (fwd_arlen + 1'b1));  // offset = length
     assign cache_wr_vld     = (~bwd_r_rdy) & mem_rd_rdy_i & mem_ar_map_vld;        // If valid (mem_ar_map_vld) data is skidded (bwd_buffer ready signal is deasserted), the cache will buffer it. 
-    assign mem_rd_addr_vld  = ~|(mem_rd_addr[ADDR_W:MEM_ADDR_W] ^ {1'b0, MEM_BASE_ADDR[ADDR_W-1:MEM_ADDR_W]}); // Check if the current ARADDR address is in the memory address range (compare the upper bit)
-    assign mem_ar_map_vld   = ~|(bwd_rd_addr[ADDR_W:MEM_ADDR_W] ^ {1'b0, MEM_BASE_ADDR[ADDR_W-1:MEM_ADDR_W]}); // Check if the delay ARADDR address is in the memory address range (compare the upper bit)
     assign mem_rd_data      = (cache_rd_rdy) ? cache_rd_data : mem_rd_data_i;       // Read the skidded data in the past
     assign mem_rd_rdy       = (~mem_ar_map_vld) | (cache_rd_rdy | mem_rd_rdy_i);    // If the address is valid, the mem/cache must be ready. Else return True
 

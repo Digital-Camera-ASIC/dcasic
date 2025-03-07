@@ -2,6 +2,7 @@ module memory
 #(
     parameter DATA_W    = 8,
     parameter ADDR_W    = 8,
+    parameter MEM_SIZE  = 1<<ADDR_W,
     parameter MEM_FILE  = ""
 )
 (
@@ -20,9 +21,6 @@ module memory
     output  [DATA_W-1:0]    rd_data_o,
     output                  rd_rdy_o
 );
-    // Local parameters
-    localparam MEM_SIZE = 1<<ADDR_W;
-
     // Internal signal
     // -- wire
     // -- reg

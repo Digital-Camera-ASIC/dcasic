@@ -3,19 +3,21 @@ module arbiter_iwrr_1cycle
     // Requester number
     parameter                               P_REQUESTER_NUM     = 4,       
     // Weight value of each requester (requester_weight[0] = max_weight)
-    parameter   [0:(P_REQUESTER_NUM*32)-1]  P_REQUESTER_WEIGHT  = {32'd5, 32'd3, 32'd2, 32'd1},
+    parameter   [0:(P_REQUESTER_NUM*32)-1]  P_REQUESTER_WEIGHT  = {P_REQUESTER_NUM{32'd1}},
     parameter                               P_WEIGHT_W          = $clog2(P_REQUESTER_WEIGHT[0*32+:32]),
-    parameter                               P_NUM_GRANT_REQ_W   = 3    // Max number of requested grant is 2**P_NUM_GRANT_REQ_W
+    parameter                               P_NUM_GRANT_REQ_W   = 3,    // Max number of requested grant is 2**P_NUM_GRANT_REQ_W
+    parameter                               P_FIXED_WEIGHT      = 1     // The arbiter use fixed weight 
 )
 (   
     // Input declaration
-    input                           clk,
-    input                           rst_n,
-    input   [P_REQUESTER_NUM-1:0]   req_i,
-    input   [P_NUM_GRANT_REQ_W-1:0] num_grant_req_i,
-    input                           grant_ready_i,
+    input                                   clk,
+    input                                   rst_n,
+    input   [P_REQUESTER_NUM-1:0]           req_i,
+    input   [P_NUM_GRANT_REQ_W-1:0]         num_grant_req_i,
+    input                                   grant_ready_i,
+    input   [P_REQUESTER_NUM*P_WEIGHT_W-1:0]req_weight_i,   // Dynamic weight
     // Output declaration
-    output  [P_REQUESTER_NUM-1:0]   grant_valid_o
+    output  [P_REQUESTER_NUM-1:0]           grant_valid_o
 );
     // Local parameters
     // Data width
@@ -36,6 +38,7 @@ module arbiter_iwrr_1cycle
     wire    [REQ_NUM_W - 1:0]                   interleaving_ptr_incr;  // interleaving pointer increment
     wire                                        round_comp;             // Round completion flag
     wire    [P_REQUESTER_NUM - 1:0]             prior_grant             [0:P_REQUESTER_NUM - 1];
+    wire    [0:P_WEIGHT_W-1]                    req_weight              [0:P_REQUESTER_NUM - 1];
     // reg declaration
     reg     [0:P_REQUESTER_NUM*P_WEIGHT_W - 1]  req_weight_r;    // requester weight
     reg     [REQ_NUM_W - 1:0]                   interleaving_ptr_r; // interleaving pointer register 
@@ -70,10 +73,16 @@ module arbiter_iwrr_1cycle
     assign interleaving_ptr_nxt = (|grant_valid_o) ? interleaving_ptr_incr : interleaving_ptr_r;
     generate
         for(i = 0; i < P_REQUESTER_NUM; i = i + 1) begin : REQ_LOGIC
+            if(P_FIXED_WEIGHT) begin : FIXED_WEIGHT
+                assign req_weight[i] = P_REQUESTER_WEIGHT[i*32+:32];
+            end
+            else begin : DYNAMIC_WEIGHT
+                assign req_weight[i] = req_weight_i[(i+1)*P_WEIGHT_W-1-:P_WEIGHT_W];
+            end
             assign req_weight_remain[i] = num_grant_req_i < req_weight_r[((i+1)*P_WEIGHT_W-1)-:P_WEIGHT_W];
             assign req_weight_completed[i] = ~|req_weight_r[((i+1)*P_WEIGHT_W-1)-:P_WEIGHT_W];	// (r_weight == 0)
             assign req_weight_decr[((i+1)*P_WEIGHT_W-1)-:P_WEIGHT_W] = (req_weight_remain[i]) ? req_weight_r[((i+1)*P_WEIGHT_W-1)-:P_WEIGHT_W] - num_grant_req_i : 0;
-            assign req_weight_nxt[((i+1)*P_WEIGHT_W-1)-:P_WEIGHT_W] = (round_comp) ? P_REQUESTER_WEIGHT[i*32+:32] : (grant_valid_o[i]) ? req_weight_decr[((i+1)*P_WEIGHT_W-1)-:P_WEIGHT_W] : req_weight_r[((i+1)*P_WEIGHT_W-1)-:P_WEIGHT_W];
+            assign req_weight_nxt[((i+1)*P_WEIGHT_W-1)-:P_WEIGHT_W] = (round_comp) ? req_weight[i] : (grant_valid_o[i]) ? req_weight_decr[((i+1)*P_WEIGHT_W-1)-:P_WEIGHT_W] : req_weight_r[((i+1)*P_WEIGHT_W-1)-:P_WEIGHT_W];
             // Onehot encoder sequence
             if(i == 0) assign grant_mux_enc[i] = grant_valid_o[i] ? i : 0;
             else assign grant_mux_enc[i] = grant_valid_o[i] ? i : grant_mux_enc[i - 1];
