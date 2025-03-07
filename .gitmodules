@@ -1,0 +1,18 @@
+[submodule "rtl/camera_rx_controller/dvp_rx_controller"]
+	path = rtl/camera_rx_controller/dvp_rx_controller
+	url = https://github.com/atfox272/DVP-RX-Controller.git
+[submodule "rtl/display_tx_controller/dbi_tx_controller"]
+	path = rtl/display_tx_controller/dbi_tx_controller
+	url = https://github.com/atfox272/DBI-TX-Controller.git
+[submodule "rtl/interconnect/axi_interconnect"]
+	path = rtl/interconnect/axi_interconnect
+	url = https://github.com/atfox272/AXI4-Interconnect.git
+[submodule "rtl/memory/axi_mem"]
+	path = rtl/memory/axi_mem
+	url = https://github.com/atfox272/axi_mem.git
+[submodule "rtl/peripherals/sccb_master_controller"]
+	path = rtl/peripherals/sccb_master_controller
+	url = https://github.com/atfox272/SCCB-Master-Controller.git
+[submodule "rtl/dma/axi_dma"]
+	path = rtl/dma/axi_dma
+	url = https://github.com/atfox272/dma.git
