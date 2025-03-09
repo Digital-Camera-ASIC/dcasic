@@ -263,6 +263,10 @@ FLAG_5:
     addi x6, x5, 0x05 # Reg address: 0x4000_0004
     addi x4, x0, 480 # Set camera format - image column: 480
     sw x4, 0(x6)
+# CAM_RX_START register
+    addi x6, x5, 0x10 # Reg address: 0x4000_0010
+    addi x4, x0, 0x01 # Set to Stream mode
+    sw x4, 0(x6)
 
 # Load DVP DMA Controller's base address to register x5
     lui x5, 0x50000
