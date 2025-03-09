@@ -7,7 +7,7 @@ module dcasic #(
     // DBI Interface
     parameter DBI_IF_D_W        = 8,
     // Instruction Memory
-    parameter IMEM_W            = 8,    // 256 instructions
+    parameter IMEM_W            = 9,    // 512 instructions
     parameter BOOTLOADER_FILE   = "L:/Projects/dcasic/bootloader/program_0.hex", // Bootloader file of the system
     // Image
     // -- Input frame (From the Camera)
@@ -16,8 +16,8 @@ module dcasic #(
     // -- Input pixel
     parameter I_PXL_FORMAT      = "RGB", // "RGB": RGB565 || "GRAY": Grayscale
     // -- Input Scaler -> To reduce the RAM resource in the Frame Memory
-    parameter I_IMG_GRAYSCALE   = 0,    
-    parameter I_IMG_DOWNSCALE   = 0,
+    parameter I_IMG_GRAYSCALE   = 1,    
+    parameter I_IMG_DOWNSCALE   = 1,
     parameter I_DOWNSCALE_TYPE  = "AVR-POOLING"  // Downscale Type - "AVR-POOLING": Average Pooling || "MAX-POOLING": Max pooling
 
 ) (
@@ -52,13 +52,14 @@ module dcasic #(
     // ========================================================================================
     // ================================== Configuration BUS ===================================
     // ========================================================================================
-    // Configuration BUS
     localparam CBUS_MST_AMT             = 1;    // 1 master - processor
     localparam CBUS_SLV_AMT             = 5;    // 5 slaves: IMEM + DSP + CAM + SCCB + DMA + UART
+    localparam CBUS_MST_MAP_W           = $clog2(CBUS_MST_AMT);
+    localparam CBUS_SLV_MAP_W           = $clog2(CBUS_SLV_AMT);
     localparam CBUS_DATA_W              = 32;
     localparam CBUS_ADDR_W              = 32;
     localparam CBUS_M_ID_W              = 1;    // 1 masters
-    localparam CBUS_S_ID_W              = CBUS_M_ID_W + $clog2(CBUS_SLV_AMT);    // 8 slaves
+    localparam CBUS_S_ID_W              = CBUS_M_ID_W + CBUS_MST_MAP_W;
     localparam CBUS_BURST_W             = 2;    // Width of xBURST 
     localparam CBUS_LEN_W               = 8;
     localparam CBUS_SIZE_W              = 3;
@@ -69,7 +70,7 @@ module dcasic #(
     localparam IMEM_BASE_ADDR           = {IMEM_PREFIX_ADDR, 29'h0000_0000}; // Base address: 0x0000_0000
     // -- Display TX configuration Memory
     localparam DSP_PREFIX_ADDR          = 3'd1;
-    localparam DSP_BASE_ADDR            = {DSP_PREFIX_ADDR, 29'h0000_0000};  // Base address: 0x2000_0000                             // Offset: Byte
+    localparam DSP_BASE_ADDR            = {DSP_PREFIX_ADDR, 29'h0000_0000};  // Base address: 0x2000_0000
     // -- Camera RX configuration Memory
     localparam CAM_PREFIX_ADDR          = 3'd2;
     localparam CAM_BASE_ADDR            = {CAM_PREFIX_ADDR, 29'h0000_0000};  // Base address: 0x4000_0000
@@ -109,7 +110,7 @@ module dcasic #(
 
 
     // ========================================================================================
-    // ================================= System configuration =================================
+    // ============================= Image Structure configuration ============================
     // ========================================================================================
     localparam RGB_PXL_W                = 16; // RGB565 pixel
     localparam GRAY_PXL_W               = 8;  // Gray pixel 
@@ -123,14 +124,11 @@ module dcasic #(
     localparam P_PXL_FORMAT             = I_IMG_GRAYSCALE ? "GRAY" : I_PXL_FORMAT;
     localparam P_PXL_W                  = I_IMG_GRAYSCALE ? GRAY_PXL_W : I_PXL_W;
     // Image Memory
-    localparam IGMEM_BASE_ADDR          = 32'h1000_0000;
+    localparam IGMEM_BASE_ADDR          = 32'h0000_0000;
     localparam IGMEM_WORD_W             = IBUS_DATA_W;  // Word width
     localparam IGMEM_SIZE               = P_FRM_SIZE * P_PXL_W / IGMEM_WORD_W; // Memory size
 
-
-
-    wire    [CBUS_ADDR_W-1:0]                       proc_awaddr;
-    wire    [CBUS_ADDR_W:0]                         proc_araddr;
+    // Configuration BUS
     wire    [CBUS_M_ID_W*CBUS_MST_AMT-1:0]          cbus_m_awid_flat;
     wire    [CBUS_ADDR_W*CBUS_MST_AMT-1:0]          cbus_m_awaddr_flat;
     wire    [CBUS_BURST_W*CBUS_MST_AMT-1:0]         cbus_m_awburst_flat;
@@ -187,8 +185,6 @@ module dcasic #(
     wire    [CBUS_SIZE_W*CBUS_SLV_AMT-1:0]          cbus_s_arsize_flat;
     wire    [CBUS_SLV_AMT-1:0]                      cbus_s_arvalid_flat;
     wire    [CBUS_SLV_AMT-1:0]                      cbus_s_rready_flat;
-
-    // Configuration BUS
     wire    [CBUS_M_ID_W-1:0]                       cbus_m_awid         [0:CBUS_MST_AMT-1];
     wire    [CBUS_ADDR_W-1:0]                       cbus_m_awaddr       [0:CBUS_MST_AMT-1];
     wire    [CBUS_BURST_W-1:0]                      cbus_m_awburst      [0:CBUS_MST_AMT-1];
@@ -349,14 +345,14 @@ module dcasic #(
         .trace_data             ()
     );
 
-    // -- Configuration Bus
+    // -- Configuration BUS
     axi_interconnect #(
         .MST_AMT                (CBUS_MST_AMT),
         .SLV_AMT                (CBUS_SLV_AMT),
         .OUTSTANDING_AMT        (CBUS_OUST_AMT),
         .MST_WEIGHT             (1),
-        .MST_ID_W               (CBUS_M_ID_W),
-        .SLV_ID_W               (CBUS_S_ID_W),
+        .MST_ID_W               (),
+        .SLV_ID_W               (),
         .DATA_WIDTH             (CBUS_DATA_W),
         .ADDR_WIDTH             (CBUS_ADDR_W),
         .TRANS_MST_ID_W         (CBUS_M_ID_W),
@@ -365,8 +361,8 @@ module dcasic #(
         .TRANS_DATA_LEN_W       (CBUS_LEN_W),
         .TRANS_DATA_SIZE_W      (CBUS_SIZE_W),
         .TRANS_WR_RESP_W        (CBUS_RESP_W),
-        .SLV_ID_MSB_IDX         (),
-        .SLV_ID_LSB_IDX         (),
+        .SLV_ID_MSB_IDX         (CBUS_ADDR_W - 1),
+        .SLV_ID_LSB_IDX         (CBUS_ADDR_W - CBUS_SLV_MAP_W),
         .DSP_RDATA_DEPTH        ()
     ) cb (
         .ACLK_i                 (sys_clk),

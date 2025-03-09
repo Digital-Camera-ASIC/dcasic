@@ -18,6 +18,3 @@
 ./../rtl/others/memory/*.v 
 ./../rtl/others/reorder/*.sv
 ./../rtl/others/converter/*.v
-
-
-L:\Projects\dcasic\rtl\camera_rx_controller\dvp_rx_controller\rtl\dvp_rx_controller.sv
