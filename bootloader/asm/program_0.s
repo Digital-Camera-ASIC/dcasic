@@ -248,7 +248,7 @@ FLAG_5:
     addi x4, x0, 0x01 # Enable the RX Controller
     sw x4, 0(x6)
 # CAM_RX_MODE register
-    addi x6, x5, 0x01 # Reg address: 0x4000_0001
+    addi x6, x5, 0x02 # Reg address: 0x4000_0002
     addi x4, x0, 0b00000010 # Set to Stream mode
     sw x4, 0(x6)
 # IRQ_MASK register
