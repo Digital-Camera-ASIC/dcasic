@@ -315,6 +315,12 @@ FLAG_5:
     addi x6, x5, 0x0E # Reg address: 0x5000_000E
     addi x4, x0, 320  # Set width of processed image: 320
     sw x4, 0(x6)
+# TRANSFER_SUBMIT register
+    lui x6, 0x00001     # RW1S offset: 0x1000
+    add x6, x5, x6      # RW1S_base_address = CHN1_base_address + RW1S_offset  
+    addi x6, x6, 0x00   # register_address = RW1S_base_address + register_offset 
+    addi x4, x0, 0x01    
+    sw x4, 0(x6) 
 
 #####################################################
 ####### Configure Direted-memory-access (DMA) #######
