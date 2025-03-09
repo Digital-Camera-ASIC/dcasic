@@ -309,7 +309,7 @@ FLAG_5:
     sw x4, 0(x6)
 # TRANSFER_X_LEN register
     addi x6, x5, 0x0B # Reg address: 0x5000_000B
-    addi x4, x0, 319  # Set width of processed image: 320
+    addi x4, x0, 9    # Set width of processed image: (9+1)*256/8 (320)
     sw x4, 0(x6)
 # TRANSFER_Y_LEN register
     addi x6, x5, 0x0C # Reg address: 0x5000_000C
@@ -317,7 +317,7 @@ FLAG_5:
     sw x4, 0(x6)
 # DST_STRIDE register
     addi x6, x5, 0x0E # Reg address: 0x5000_000E
-    addi x4, x0, 320  # Set width of processed image: 320
+    addi x4, x0, 10  # Set width of processed image: 10*256/8 (320)
     sw x4, 0(x6)
 # TRANSFER_SUBMIT register
     lui x6, 0x00001     # RW1S offset: 0x1000
@@ -389,7 +389,7 @@ FLAG_5:
     sw x4, 0(x5)
 # TRANSFER_X_LEN[0] register
     addi x5, x7, 0x0B   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 319     
+    addi x4, x0, 9     
     sw x4, 0(x5)
 # TRANSFER_Y_LEN[0] register
     addi x5, x7, 0x0C   # register_address = DMA_base_address + register_offset 
@@ -397,7 +397,7 @@ FLAG_5:
     sw x4, 0(x5)
 # SRC_STRIDE[0] register
     addi x5, x7, 0x0C   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 320    
+    addi x4, x0, 10    
     sw x4, 0(x5) 
 # TRANSFER_SUBMIT[0] register
     lui x5, 0x00001     # RW1S offset: 0x1000
@@ -446,7 +446,7 @@ FLAG_5:
     sw x4, 0(x5)
 # TRANSFER_X_LEN[0] register
     addi x5, x8, 0x0B   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 319     
+    addi x4, x0, 9     
     sw x4, 0(x5)
 # TRANSFER_Y_LEN[0] register
     addi x5, x8, 0x0C   # register_address = DMA_base_address + register_offset 
@@ -454,7 +454,7 @@ FLAG_5:
     sw x4, 0(x5)
 # SRC_STRIDE[0] register
     addi x5, x8, 0x0C   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 320    
+    addi x4, x0, 10    
     sw x4, 0(x5) 
 # TRANSFER_SUBMIT[0] register
     lui x5, 0x00001     # RW1S offset: 0x1000
