@@ -5,7 +5,7 @@
 `define RST_DLY_START   3
 `define RST_DUR         9
 
-`define END_TIME        700000
+`define END_TIME        90000000
 
 // DVP Physical characteristic
 // -- t_PDV = 5 ns = (5/INTERNAL_CLK_PERIOD)*DUT_CLK_PERIOD = (5/8)*2
@@ -90,9 +90,6 @@ module dcasic_tb;
     end
 
     initial begin
-        repeat(40) begin
-            aclk_cl;
-        end
         dvp_driver();
     end
     initial begin
@@ -107,7 +104,6 @@ module dcasic_tb;
 
 
     /* ------------------------------ DVP RX Controller ------------------------------ */
-    
     int pclk_cnt    = 0;
     int dvp_st      = 0;
     int tx_cnt      = 0;
@@ -231,7 +227,6 @@ module dcasic_tb;
 
     
     /* ------------------------------ DBI TX Controller ------------------------------ */ 
-    // TODO: Implement a DBI FSM Monitor
     localparam DBI_IMG_IDLE     = 2'd0;
     localparam DBI_IMG_TX       = 2'd1; 
 
@@ -267,22 +262,15 @@ module dcasic_tb;
                 else begin
                     output_img[dbi_d_cnt/2][7:0] <= dbi_d_o;
                 end
+                dbi_d_cnt <= dbi_d_cnt + 1;
                 if(dbi_d_cnt == 320*240*2 - 1) begin    // Output image size is 320x240 (2 data/pixel)
-                    // dbi_img_rc_st <= DBI_IMG_IDLE;
+                    dbi_img_rc_st <= DBI_IMG_IDLE;
                     dbi_d_cnt <= 0;
+                    #1; $writememh("L:/Projects/dcasic/sim/dut_env/dut_output/img_txt.txt", output_img);
                 end
-                dbi_d_cnt = dbi_d_cnt + 1;
             end
         endcase
     end
-    initial begin : IMAGE_RECORD
-        while(1'b1) begin
-            wait(dbi_d_cnt == (320*240*2)); #1;
-            dbi_d_cnt <= 0;
-            $writememh("L:/Projects/dcasic/sim/dut_env/dut_output/img_txt.txt", output_img);
-        end
-    end
-    // -> Record Image when the sub-address is 0x2C 
     /* ------------------------------ DBI TX Controller ------------------------------ */ 
 
     /* ------------------------------ SCCB Monitor ------------------------------ */

@@ -8,3 +8,5 @@ rp/
 sim/dut_env/dut_output/img_txt.txt
 sim/dut_env/dut_input/img_txt.txt
 sim/vsim*
+bootloader/asm/sim_0.s
+vivado

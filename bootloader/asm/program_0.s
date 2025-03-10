@@ -232,12 +232,12 @@ FLAG_5:
     lui x5, 0x20000     # Base address of DBI TX Controller
     addi x6, x5, 0x02   # DBI_FRAME_WIDTH register address
     addi x4, x0, 320    # Width of the display frame
-    sb x4, 0(x6)
+    sw x4, 0(x6)
 # DBI_FRAME_HEIGHT register
     lui x5, 0x20000     # Base address of DBI TX Controller
     addi x6, x5, 0x03   # DBI_FRAME_HEIGHT register address
     addi x4, x0, 240    # Height of the display frame
-    sb x4, 0(x6)
+    sw x4, 0(x6)
 # DBI_MEM_COM register
     addi x5, x5, 0x01
     addi x4, x0, 0x2C   # x4: 0x2C - Memory Write command

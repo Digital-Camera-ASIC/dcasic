@@ -9,6 +9,8 @@ module sync_fifo
     parameter OUT_DATA_WIDTH    = DATA_WIDTH,
     // -- For CONCAT FIFO 
     parameter CONCAT_ORDER      = "LSB",
+    // -- For DECONCAT FIFO 
+    parameter DECONCAT_ORDER    = "LSB",    // "MSB": First data-out is placed at MSB || "LSB": First data-out is placed at LSB 
     // Do not configure
     parameter ADDR_WIDTH        = $clog2(FIFO_DEPTH)
 )
@@ -349,7 +351,12 @@ else if(FIFO_TYPE == 4) begin : DECONCAT_FIFO
     assign wr_hsk       = wr_valid_i & wr_ready_o;
     assign rd_hsk       = rd_valid_i & rd_ready_o;
     for(sml_idx = 0; sml_idx < CAT_NUM; sml_idx = sml_idx + 1) begin : BUF_MAP
-        assign data_map[sml_idx] = buffer[OUT_DATA_WIDTH*(sml_idx+1)-1-:OUT_DATA_WIDTH];
+        if(DECONCAT_ORDER == "LSB") begin
+            assign data_map[sml_idx] = buffer[OUT_DATA_WIDTH*(sml_idx+1)-1-:OUT_DATA_WIDTH];
+        end
+        else if (DECONCAT_ORDER == "MSB") begin
+            assign data_map[CAT_NUM-1 - sml_idx] = buffer[OUT_DATA_WIDTH*(sml_idx+1)-1-:OUT_DATA_WIDTH];
+        end
     end
     // Flip-flop
     always @(posedge clk) begin

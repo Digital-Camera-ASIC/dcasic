@@ -893,6 +893,6 @@ module dcasic #(
         end
     endgenerate
 `ifdef SILICON_DEBUG
-    assign debug_0 = |cbus_s_araddr[IMEM_PREFIX_ADDR]; // (!= 0)
+    assign debug_0 = 1'b1;
 `endif
 endmodule

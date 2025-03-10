@@ -1,7 +1,7 @@
 onerror resume
 wave tags F0 
 wave update off
-wave zoom range 0 174427
+wave zoom range 19272533655 19274051773
 wave add dcasic_tb.sys_clk -tag F0 -radix hexadecimal
 wave add dcasic_tb.dut.sys_trap_o -tag F0 -radix hexadecimal
 wave group IMEM -backgroundcolor #004466
@@ -19,7 +19,7 @@ wave group PROC:M_W -backgroundcolor #006666
 wave insertion [expr [wave index insertpoint] + 1]
 wave group PROC:M_B -backgroundcolor #226600
 wave insertion [expr [wave index insertpoint] + 1]
-wave add -group PROC dcasic_tb.dut.proc.picorv32_core.cpuregs -tag F0 -radix hexadecimal -subitemconfig { {dcasic_tb.dut.proc.picorv32_core.cpuregs[0]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[1]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[2]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[3]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[4]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[5]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[6]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[7]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[8]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[9]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[10]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[11]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[12]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[13]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[14]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[15]} {-radix hexadecimal} }
+wave add -group PROC dcasic_tb.dut.proc.picorv32_core.cpuregs -tag F0 -radix hexadecimal -expand -subitemconfig { {dcasic_tb.dut.proc.picorv32_core.cpuregs[0]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[1]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[2]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[3]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[4]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[5]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[6]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[7]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[8]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[9]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[10]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[11]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[12]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[13]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[14]} {-radix hexadecimal} {dcasic_tb.dut.proc.picorv32_core.cpuregs[15]} {-radix hexadecimal} }
 wave insertion [expr [wave index insertpoint] + 1]
 wave group SCCB -backgroundcolor #666600
 wave group SCCB:SCCB_IF -backgroundcolor #004466
@@ -31,13 +31,12 @@ wave add -group SCCB:SCCB_IF:VISUALIZE dcasic_tb.tx_data_vld -tag F0 -radix hexa
 wave insertion [expr [wave index insertpoint] + 1]
 wave insertion [expr [wave index insertpoint] + 1]
 wave group SCCB:s_AW -backgroundcolor #664400
-wave add -group SCCB:s_AW dcasic_tb.dut.cc.s_awaddr_i -tag F0 -radix hexadecimal -select
+wave add -group SCCB:s_AW dcasic_tb.dut.cc.s_awaddr_i -tag F0 -radix hexadecimal
 wave add -group SCCB:s_AW dcasic_tb.dut.cc.s_awburst_i -tag F0 -radix hexadecimal
 wave add -group SCCB:s_AW dcasic_tb.dut.cc.s_awid_i -tag F0 -radix hexadecimal
 wave add -group SCCB:s_AW dcasic_tb.dut.cc.s_awlen_i -tag F0 -radix hexadecimal
-wave add -group SCCB:s_AW dcasic_tb.dut.cc.s_awready_o -tag F0 -radix hexadecimal
 wave add -group SCCB:s_AW dcasic_tb.dut.cc.s_awvalid_i -tag F0 -radix hexadecimal
-wave add -group SCCB:s_AW dcasic_tb.dut.cbus_s_awvalid_flat -tag F0 -radix hexadecimal -expand -subitemconfig { {dcasic_tb.dut.cbus_s_awvalid_flat[4]} {-radix hexadecimal} {dcasic_tb.dut.cbus_s_awvalid_flat[3]} {-radix hexadecimal} {dcasic_tb.dut.cbus_s_awvalid_flat[2]} {-radix hexadecimal} {dcasic_tb.dut.cbus_s_awvalid_flat[1]} {-radix hexadecimal} {dcasic_tb.dut.cbus_s_awvalid_flat[0]} {-radix hexadecimal} }
+wave add -group SCCB:s_AW dcasic_tb.dut.cc.s_awready_o -tag F0 -radix hexadecimal
 wave insertion [expr [wave index insertpoint] + 1]
 wave group SCCB:s_W -backgroundcolor #660000
 wave insertion [expr [wave index insertpoint] + 1]
@@ -51,18 +50,46 @@ wave add -group DVP:DVP_IF dcasic_tb.dut.dvp_href_i -tag F0 -radix hexadecimal
 wave add -group DVP:DVP_IF dcasic_tb.dut.dvp_vsync_i -tag F0 -radix hexadecimal
 wave add -group DVP:DVP_IF dcasic_tb.dut.dvp_pclk_i -tag F0 -radix hexadecimal
 wave add -group DVP:DVP_IF dcasic_tb.dut.dvp_xclk_o -tag F0 -radix hexadecimal
+wave add -group DVP:DVP_IF dcasic_tb.dut.cam.cs.sm.drc_st_q -tag F0 -radix mnemonic
+wave add -group DVP:DVP_IF dcasic_tb.dut.cam.cs.sm.cam_rx_en -tag F0 -radix hexadecimal
+wave add -group DVP:DVP_IF dcasic_tb.dut.cam.cs.sm.cam_rx_start -tag F0 -radix hexadecimal
+wave add -group DVP:DVP_IF dcasic_tb.dut.cam.cs.sm.drc_slp_mode -tag F0 -radix hexadecimal
 wave insertion [expr [wave index insertpoint] + 1]
 wave group DVP:CONF -backgroundcolor #664400
 wave group DVP:CONF:CONF_AW -backgroundcolor #004466
+wave add -group DVP:CONF:CONF_AW dcasic_tb.dut.cam.idma.s_awaddr_i -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:CONF_AW dcasic_tb.dut.cam.idma.s_awburst_i -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:CONF_AW dcasic_tb.dut.cam.idma.s_awid_i -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:CONF_AW dcasic_tb.dut.cam.idma.s_awlen_i -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:CONF_AW dcasic_tb.dut.cam.idma.s_awvalid_i -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:CONF_AW dcasic_tb.dut.cam.idma.s_awready_o -tag F0 -radix hexadecimal
 wave insertion [expr [wave index insertpoint] + 1]
 wave group DVP:CONF:CONF_W -backgroundcolor #006666
+wave add -group DVP:CONF:CONF_W dcasic_tb.dut.cam.idma.s_wdata_i -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:CONF_W dcasic_tb.dut.cam.idma.s_wlast_i -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:CONF_W dcasic_tb.dut.cam.idma.s_wvalid_i -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:CONF_W dcasic_tb.dut.cam.idma.s_wready_o -tag F0 -radix hexadecimal
 wave insertion [expr [wave index insertpoint] + 1]
 wave group DVP:CONF:CONF_B -backgroundcolor #226600
+wave add -group DVP:CONF:CONF_B dcasic_tb.dut.cam.idma.s_bid_o -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:CONF_B dcasic_tb.dut.cam.idma.s_bresp_o -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:CONF_B dcasic_tb.dut.cam.idma.s_bvalid_o -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:CONF_B dcasic_tb.dut.cam.idma.s_bready_i -tag F0 -radix hexadecimal
 wave insertion [expr [wave index insertpoint] + 1]
 wave group DVP:CONF:PXL_TX -backgroundcolor #666600
 wave group DVP:CONF:PXL_TX:AW -backgroundcolor #004466
+wave add -group DVP:CONF:PXL_TX:AW dcasic_tb.dut.cam.idma.m_awaddr_o -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:PXL_TX:AW dcasic_tb.dut.cam.idma.m_awburst_o -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:PXL_TX:AW dcasic_tb.dut.cam.idma.m_awid_o -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:PXL_TX:AW dcasic_tb.dut.cam.idma.m_awlen_o -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:PXL_TX:AW dcasic_tb.dut.cam.idma.m_awvalid_o -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:PXL_TX:AW dcasic_tb.dut.cam.idma.m_awready_i -tag F0 -radix hexadecimal
 wave insertion [expr [wave index insertpoint] + 1]
 wave group DVP:CONF:PXL_TX:W -backgroundcolor #006666
+wave add -group DVP:CONF:PXL_TX:W dcasic_tb.dut.cam.idma.m_wdata_o -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:PXL_TX:W dcasic_tb.dut.cam.idma.m_wlast_o -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:PXL_TX:W dcasic_tb.dut.cam.idma.m_wvalid_o -tag F0 -radix hexadecimal
+wave add -group DVP:CONF:PXL_TX:W dcasic_tb.dut.cam.idma.m_wready_i -tag F0 -radix hexadecimal
 wave insertion [expr [wave index insertpoint] + 1]
 wave group DVP:CONF:PXL_TX:B -backgroundcolor #226600
 wave insertion [expr [wave index insertpoint] + 1]
@@ -85,8 +112,34 @@ wave group DBI:CONF:W -backgroundcolor #8a0000
 wave insertion [expr [wave index insertpoint] + 1]
 wave insertion [expr [wave index insertpoint] + 1]
 wave insertion [expr [wave index insertpoint] + 1]
-wave group DBI:DBI_IF -collapse
-wave group DVP:DVP_IF -collapse
+wave group DMA -backgroundcolor #004466
+wave group DMA:S_AW -backgroundcolor #ffaa7f
+wave add -group DMA:S_AW dcasic_tb.dut.dma.rm.s_awaddr_i -tag F0 -radix hexadecimal
+wave add -group DMA:S_AW dcasic_tb.dut.dma.rm.s_awburst_i -tag F0 -radix hexadecimal
+wave add -group DMA:S_AW dcasic_tb.dut.dma.rm.s_awid_i -tag F0 -radix hexadecimal
+wave add -group DMA:S_AW dcasic_tb.dut.dma.rm.s_awlen_i -tag F0 -radix hexadecimal
+wave add -group DMA:S_AW dcasic_tb.dut.dma.rm.s_awready_o -tag F0 -radix hexadecimal
+wave add -group DMA:S_AW dcasic_tb.dut.dma.rm.s_awvalid_i -tag F0 -radix hexadecimal
+wave insertion [expr [wave index insertpoint] + 1]
+wave group DMA:S_W -backgroundcolor #006666
+wave add -group DMA:S_W dcasic_tb.dut.dma.rm.s_wdata_i -tag F0 -radix hexadecimal
+wave add -group DMA:S_W dcasic_tb.dut.dma.rm.s_wlast_i -tag F0 -radix hexadecimal
+wave add -group DMA:S_W dcasic_tb.dut.dma.rm.s_wready_o -tag F0 -radix hexadecimal
+wave add -group DMA:S_W dcasic_tb.dut.dma.rm.s_wvalid_i -tag F0 -radix hexadecimal
+wave insertion [expr [wave index insertpoint] + 1]
+wave group DMA:M_AR -backgroundcolor #006666
+wave add -group DMA:M_AR dcasic_tb.dut.dma.m_arid_o -tag F0 -radix hexadecimal
+wave add -group DMA:M_AR dcasic_tb.dut.dma.m_araddr_o -tag F0 -radix hexadecimal
+wave add -group DMA:M_AR dcasic_tb.dut.dma.m_arburst_o -tag F0 -radix hexadecimal
+wave add -group DMA:M_AR dcasic_tb.dut.dma.m_arlen_o -tag F0 -radix hexadecimal
+wave add -group DMA:M_AR dcasic_tb.dut.dma.m_arready_i -tag F0 -radix hexadecimal
+wave add -group DMA:M_AR dcasic_tb.dut.dma.m_arvalid_o -tag F0 -radix hexadecimal
+wave insertion [expr [wave index insertpoint] + 1]
+wave insertion [expr [wave index insertpoint] + 1]
+wave group DVP:CONF:CONF_B -collapse
+wave group DVP:CONF:CONF_W -collapse
+wave group DVP:CONF:CONF_AW -collapse
+wave group SCCB:s_AW -collapse
 wave group SCCB:SCCB_IF:VISUALIZE -collapse
 wave update on
-wave top 0
+wave top 74

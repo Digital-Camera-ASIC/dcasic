@@ -17,3 +17,4 @@ output_anal:
 clean:
 	if exist dut_env\dut_input\img_txt.txt del /f dut_env\dut_input\img_txt.txt
 	if exist dut_env\dut_output\img_txt.txt del /f dut_env\dut_output\img_txt.txt
+	if exist output.jpg del /f output.jpg
