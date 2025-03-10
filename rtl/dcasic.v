@@ -816,7 +816,7 @@ module dcasic #(
 
     );
 `else
-    assign dbus_tready_slv[IP_TREADY_IDX] = 1'b1;
+    assign dbus_tready_slv[IP_TREADY_IDX] = ~|(dbus_tdest^IP_TDEST_MSK); // Ready is asserted when the IP is mapped
 `endif
 
     // Connection

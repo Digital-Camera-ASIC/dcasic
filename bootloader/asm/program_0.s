@@ -228,14 +228,23 @@ FLAG_5:
     sb x4, 0(x5)
     addi x4, x0, 0x29           # x4: 0x29          (DISP_ON Command)
     sb x4, 0(x6)
-# 10. Configure: Memory write command
-    lui x5, 0x20000
+# DBI_FRAME_WIDTH register
+    lui x5, 0x20000     # Base address of DBI TX Controller
+    addi x6, x5, 0x02   # DBI_FRAME_WIDTH register address
+    addi x4, x0, 320    # Width of the display frame
+    sb x4, 0(x6)
+# DBI_FRAME_HEIGHT register
+    lui x5, 0x20000     # Base address of DBI TX Controller
+    addi x6, x5, 0x03   # DBI_FRAME_HEIGHT register address
+    addi x4, x0, 240    # Height of the display frame
+    sb x4, 0(x6)
+# DBI_MEM_COM register
     addi x5, x5, 0x01
     addi x4, x0, 0x2C   # x4: 0x2C - Memory Write command
     sb x4, 0(x5)
-# 11. Change mode of the display controller to STREAM mode
+# CTRL_MODE register
     lui x5, 0x20000
-    addi x4, x0, 0x02   # x4: 0x02 - STREAM mode encode
+    addi x4, x0, 0x02   # x4: 0x02 - change to STREAM mode encode
     sb x4, 0(x5)
 
 #####################################################
@@ -396,7 +405,7 @@ FLAG_5:
     addi x4, x0, 239    
     sw x4, 0(x5)
 # SRC_STRIDE[0] register
-    addi x5, x7, 0x0C   # register_address = DMA_base_address + register_offset 
+    addi x5, x7, 0x0D   # register_address = DMA_base_address + register_offset 
     addi x4, x0, 10    
     sw x4, 0(x5) 
 # TRANSFER_SUBMIT[0] register
@@ -435,28 +444,28 @@ FLAG_5:
     addi x5, x8, 0x08   # register_address = DMA_base_address + register_offset 
     addi x4, x0, 15     # Set number of words per burst: 16 words 
     sw x4, 0(x5)
-# SRC_ADDR[0] register
+# SRC_ADDR[1] register
     addi x5, x8, 0x09   # register_address = DMA_base_address + register_offset 
     lui x4, 0x00000     # Set source address IGMEM (Base address: 0x0000_0000)
     addi x4, x0, 0x00    
     sw x4, 0(x5)
-# DST_TDEST[0] register
+# DST_TDEST[1] register
     addi x5, x8, 0x0A   # register_address = DMA_base_address + register_offset 
     addi x4, x0, 0x01   # TDEST_MASK for Image Processor  
     sw x4, 0(x5)
-# TRANSFER_X_LEN[0] register
+# TRANSFER_X_LEN[1] register
     addi x5, x8, 0x0B   # register_address = DMA_base_address + register_offset 
     addi x4, x0, 9     
     sw x4, 0(x5)
-# TRANSFER_Y_LEN[0] register
+# TRANSFER_Y_LEN[1] register
     addi x5, x8, 0x0C   # register_address = DMA_base_address + register_offset 
     addi x4, x0, 239    
     sw x4, 0(x5)
-# SRC_STRIDE[0] register
-    addi x5, x8, 0x0C   # register_address = DMA_base_address + register_offset 
+# SRC_STRIDE[1] register
+    addi x5, x8, 0x0D   # register_address = DMA_base_address + register_offset 
     addi x4, x0, 10    
     sw x4, 0(x5) 
-# TRANSFER_SUBMIT[0] register
+# TRANSFER_SUBMIT[1] register
     lui x5, 0x00001     # RW1S offset: 0x1000
     add x5, x5, x8      # RW1S_base_address = CHN1_base_address + RW1S_offset  
     addi x5, x5, 0x00   # register_address = RW1S_base_address + register_offset 
