@@ -560,6 +560,7 @@ module dcasic #(
         .ATX_RESP_W             (CBUS_RESP_W),
         .DVP_DATA_W             (DVP_DATA_W),
         .DVP_FIFO_D             (8),
+        .DVP_CAPTURE_TYPE       ("PCLK_EDGE"), // For lower speed, but higher stability
         .PXL_GRAYSCALE          (I_IMG_GRAYSCALE),
         .FRM_DOWNSCALE          (I_IMG_DOWNSCALE),
         .FRM_COL_NUM            (I_FRM_COL_NUM),
