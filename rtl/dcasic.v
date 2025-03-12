@@ -1,5 +1,5 @@
 // `define IMAGE_PROCESSOR_ENABLE
-`define SILICON_DEBUG
+// `define SILICON_DEBUG
 module dcasic #(
     parameter INTERNAL_CLK      = 50_000_000,
     // DVP Interface
@@ -45,6 +45,12 @@ module dcasic #(
 
 `ifdef SILICON_DEBUG
     ,output                     debug_0
+    ,output                     dvp_href_2
+    ,output                     dvp_vsync_2
+    ,output                     dvp_pclk_2
+    ,output                     dvp_xclk_2
+    ,output                     dvp_d_i_0
+    ,output                     dvp_d_i_1
 `endif
 
 );
@@ -726,6 +732,7 @@ module dcasic #(
         .m_arready_i            (ibus_arready),
         .m_rid_i                (ibus_rid),
         .m_rdata_i              (ibus_rdata),
+        // .m_rdata_i              ({{(IBUS_DATA_W/2){1'b1}}, {(IBUS_DATA_W/2){1'b0}}}),
         .m_rresp_i              (ibus_rresp),
         .m_rlast_i              (ibus_rlast),
         .m_rvalid_i             (ibus_rvalid),
@@ -894,5 +901,11 @@ module dcasic #(
     endgenerate
 `ifdef SILICON_DEBUG
     assign debug_0 = 1'b1;
+    assign dvp_href_2   = dvp_href_i;
+    assign dvp_vsync_2  = dvp_vsync_i;
+    assign dvp_pclk_2   = dvp_pclk_i;
+    assign dvp_xclk_2   = dvp_xclk_o;
+    assign dvp_d_i_0    = dvp_d_i[0];
+    assign dvp_d_i_1    = dvp_d_i[1];
 `endif
 endmodule

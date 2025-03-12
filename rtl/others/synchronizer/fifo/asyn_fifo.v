@@ -137,7 +137,7 @@ module asyn_fifo
             end
         end
         // -- -- Read pointer synchronizer
-        for(sync_ff_idx = 0; sync_ff_idx < NUM_SYNC_FF; sync_ff_idx = sync_ff_idx + 1) begin
+        for(sync_ff_idx = 0; sync_ff_idx < NUM_SYNC_FF; sync_ff_idx = sync_ff_idx + 1) begin : MULT_FF_RD_SYNC
             if(sync_ff_idx == 0) begin
                 always @(posedge clk_wr_domain or negedge rst_n) begin
                     if(!rst_n) begin 
@@ -180,7 +180,7 @@ module asyn_fifo
             end
         end
         // -- -- Write pointer synchronizer
-        for(sync_ff_idx = 0; sync_ff_idx < NUM_SYNC_FF; sync_ff_idx = sync_ff_idx + 1) begin
+        for(sync_ff_idx = 0; sync_ff_idx < NUM_SYNC_FF; sync_ff_idx = sync_ff_idx + 1) begin : MULT_FF_WR_SYNC
             if(sync_ff_idx == 0) begin
                 always @(posedge clk_rd_domain or negedge rst_n) begin
                     if(!rst_n) begin
@@ -294,7 +294,10 @@ module asyn_fifo
         // -- Global
         // -- -- Buffer updater
         always @(posedge clk_wr_domain) begin
-            if(wr_handshake) begin
+            if(!rst_n) begin
+            
+            end
+            else if(wr_handshake) begin
                 buffer[wr_addr_map] <= data_i;
             end
         end
@@ -335,7 +338,7 @@ module asyn_fifo
             end
         end
         // -- -- Read pointer synchronizer
-        for(sync_ff_idx = 0; sync_ff_idx < NUM_SYNC_FF; sync_ff_idx = sync_ff_idx + 1) begin
+        for(sync_ff_idx = 0; sync_ff_idx < NUM_SYNC_FF; sync_ff_idx = sync_ff_idx + 1) begin : MULT_FF_RD_SYNC
             if(sync_ff_idx == 0) begin
                 always @(posedge clk_wr_domain or negedge rst_n) begin
                     if(!rst_n) begin 
@@ -405,7 +408,7 @@ module asyn_fifo
             end
         end
         // -- -- Write pointer synchronizer
-        for(sync_ff_idx = 0; sync_ff_idx < NUM_SYNC_FF; sync_ff_idx = sync_ff_idx + 1) begin
+        for(sync_ff_idx = 0; sync_ff_idx < NUM_SYNC_FF; sync_ff_idx = sync_ff_idx + 1) begin : MULT_FF_WR_SYNC
             if(sync_ff_idx == 0) begin
                 always @(posedge clk_rd_domain or negedge rst_n) begin
                     if(!rst_n) begin
