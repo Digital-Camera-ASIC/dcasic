@@ -17,13 +17,6 @@
 module dcasic_tb;
     parameter DVP_DATA_W        = 8;
     parameter DBI_IF_D_W        = 8;
-    parameter MC_DATA_W         = 8;
-    parameter DATA_W            = 32;
-    parameter ADDR_W            = 32;
-    parameter MST_ID_W          = 5;
-    parameter TRANS_DATA_LEN_W  = 8;
-    parameter TRANS_DATA_SIZE_W = 3;
-    parameter TRANS_RESP_W      = 2;
 
     logic                       sys_clk;
     logic                       sys_trap_o;
@@ -50,7 +43,7 @@ module dcasic_tb;
     logic                       debug_0;
 
     dcasic #(
-        .BOOTLOADER_FILE("L:/Projects/dcasic/bootloader/program_0.hex")
+        .BOOTLOADER_FILE("L:/Projects/dcasic/bootloader/sim_0.hex")
     ) dut (
         .*
     );
@@ -81,7 +74,7 @@ module dcasic_tb;
 
     // PCLK generator 
     always @(dvp_xclk_o) begin
-        #1; dvp_pclk_i <= dvp_xclk_o;
+        #2; dvp_pclk_i <= dvp_xclk_o;
     end
 
     reg [63:0]  temp = '0;

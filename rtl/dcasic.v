@@ -733,7 +733,6 @@ module dcasic #(
         .m_arready_i            (ibus_arready),
         .m_rid_i                (ibus_rid),
         .m_rdata_i              (ibus_rdata),
-        // .m_rdata_i              ({{(IBUS_DATA_W/2){1'b1}}, {(IBUS_DATA_W/2){1'b0}}}),
         .m_rresp_i              (ibus_rresp),
         .m_rlast_i              (ibus_rlast),
         .m_rvalid_i             (ibus_rvalid),
