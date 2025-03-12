@@ -5,7 +5,7 @@
 `define RST_DLY_START   3
 `define RST_DUR         9
 
-`define END_TIME        90000000
+`define END_TIME        10000000
 
 // DVP Physical characteristic
 // -- t_PDV = 5 ns = (5/INTERNAL_CLK_PERIOD)*DUT_CLK_PERIOD = (5/8)*2
@@ -43,7 +43,7 @@ module dcasic_tb;
     logic                       debug_0;
 
     dcasic #(
-        .BOOTLOADER_FILE("L:/Projects/dcasic/bootloader/sim_0.hex")
+        .BOOTLOADER_FILE("../firmware/test/sim_0.hex")
     ) dut (
         .*
     );
@@ -74,7 +74,7 @@ module dcasic_tb;
 
     // PCLK generator 
     always @(dvp_xclk_o) begin
-        #2; dvp_pclk_i <= dvp_xclk_o;
+        #2.1; dvp_pclk_i <= dvp_xclk_o;
     end
 
     reg [63:0]  temp = '0;
@@ -103,7 +103,7 @@ module dcasic_tb;
     reg [15:0] input_img [0:640*480-1];
 
     initial begin
-        $readmemh("L:/Projects/dcasic/sim/dut_env/dut_input/img_txt.txt", input_img);
+        $readmemh("../sim/dut_env/dut_input/img_txt.txt", input_img);
     end
 
     task automatic pclk_cl;
@@ -259,7 +259,7 @@ module dcasic_tb;
                 if(dbi_d_cnt == 320*240*2 - 1) begin    // Output image size is 320x240 (2 data/pixel)
                     dbi_img_rc_st <= DBI_IMG_IDLE;
                     dbi_d_cnt <= 0;
-                    #1; $writememh("L:/Projects/dcasic/sim/dut_env/dut_output/img_txt.txt", output_img);
+                    #1; $writememh("../sim/dut_env/dut_output/img_txt.txt", output_img);
                 end
             end
         endcase
