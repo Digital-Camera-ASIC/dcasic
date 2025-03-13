@@ -1,10 +1,10 @@
 ./../rtl/*.v
 ./../rtl/processor/*.v
 
-./../ip/camera_rx_controller/dvp_rx_controller/rtl/*.sv
-./../ip/camera_rx_controller/dvp_rx_controller/rtl/*.v
+./../ip/camera_if/dvp_rx_controller/rtl/*.sv
+./../ip/camera_if/dvp_rx_controller/rtl/*.v
+./../ip/display_if/dbi_tx_controller/rtl/*.v
 ./../ip/interconnect/axi_interconnect/rtl/*.v
-./../ip/display_tx_controller/dbi_tx_controller/rtl/*.v
 ./../ip/dma/axi_dma/axi_dma/rtl/*.sv
 ./../ip/memory/axi_mem/rtl/*.v
 ./../ip/peripherals/sccb_master_controller/rtl/*.v
