@@ -1,8 +1,8 @@
-[submodule "ip/camera_rx_controller/dvp_rx_controller"]
-	path = ip/camera_rx_controller/dvp_rx_controller
+[submodule "ip/camera_if/dvp_rx_controller"]
+	path = ip/camera_if/dvp_rx_controller
 	url = https://github.com/atfox272/DVP-RX-Controller.git
-[submodule "ip/display_tx_controller/dbi_tx_controller"]
-	path = ip/display_tx_controller/dbi_tx_controller
+[submodule "ip/display_if/dbi_tx_controller"]
+	path = ip/display_if/dbi_tx_controller
 	url = https://github.com/atfox272/DBI-TX-Controller.git
 [submodule "ip/dma/axi_dma"]
 	path = ip/dma/axi_dma
