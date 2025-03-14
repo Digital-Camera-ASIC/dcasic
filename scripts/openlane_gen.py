@@ -1,7 +1,6 @@
 import os
 import shutil
 import json
-from collections import OrderedDict
 
 # Define paths
 OPENLANE_DIR = "openlane"
@@ -9,6 +8,8 @@ SRC_DIR = os.path.join(OPENLANE_DIR, "src")
 RTL_FILE = "rtl.f"
 SDC_SOURCE = "../rtl/dcasic.sdc"
 SDC_DEST = os.path.join(SRC_DIR, "dcasic.sdc")
+PIN_ORDER_SOURCE = "openlane_pin_order.cfg"
+PIN_ORDER_DEST = os.path.join(OPENLANE_DIR, "pin_order.cfg")
 CONFIG_TEMPLATE = "openlane_config.json"
 CONFIG_OUTPUT = os.path.join(OPENLANE_DIR, "config.json")
 
@@ -44,25 +45,33 @@ if os.path.exists(SDC_SOURCE):
 else:
     print(f"[WARN]: SDC file not found: {SDC_SOURCE}")
 
+# Copy the pin order configuration file
+if os.path.exists(PIN_ORDER_SOURCE):
+    shutil.copy(PIN_ORDER_SOURCE, PIN_ORDER_DEST)
+    print(f"[INFO]: Copied Pin Order: {PIN_ORDER_SOURCE} -> {PIN_ORDER_DEST}")
+else:
+    print(f"[WARN]: Pin order file not found: {PIN_ORDER_SOURCE}")
+
 # Load the config template
 with open(CONFIG_TEMPLATE, "r") as f:
-    config_template = json.load(f)
+    config = json.load(f)
 
-# Define primary keys
-primary_config = OrderedDict({
+# Update config fields
+new_config = {
     "DESIGN_NAME": "dcasic",
     "VERILOG_FILES": verilog_files,
     "CLOCK_PORT": "sys_clk",
     "CLOCK_NET": "sys_clk",
+    "FP_CORE_UTIL": 70,
+    "CLOCK_PERIOD": 20,
     "BASE_SDC_FILE": f"dir::src/dcasic.sdc" if os.path.exists(SDC_DEST) else ""
-})
+}
 
-# Merge with template (primary keys first)
-final_config = OrderedDict(primary_config)
-final_config.update(config_template)
+# Merge the new config with the existing one while keeping new keys on top
+new_config.update(config)
 
 # Save the new config.json
 with open(CONFIG_OUTPUT, "w") as f:
-    json.dump(final_config, f, indent=4)
+    json.dump(new_config, f, indent=4)
 
 print(f"[INFO]: Config generated at {CONFIG_OUTPUT}")
