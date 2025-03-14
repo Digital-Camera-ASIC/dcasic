@@ -1,0 +1,88 @@
+# Top
+./../rtl/dcasic.v
+# Processor (RV32I)
+./../rtl/processor/picorv32.v
+# Camera IF (DVP TX Controller)
+./../ip/camera_if/dvp_rx_controller/rtl/dvp_rx_controller.sv
+./../ip/camera_if/dvp_rx_controller/rtl/drc_cs_state_machine.v
+./../ip/camera_if/dvp_rx_controller/rtl/drc_ctrl_state.v
+./../ip/camera_if/dvp_rx_controller/rtl/drc_dvp_data_fifo.v
+./../ip/camera_if/dvp_rx_controller/rtl/drc_frm_downscaler.v
+./../ip/camera_if/dvp_rx_controller/rtl/drc_mem_aligner.v
+./../ip/camera_if/dvp_rx_controller/rtl/drc_pclk_sync.v
+./../ip/camera_if/dvp_rx_controller/rtl/drc_pxl_grayscaler.v
+./../ip/camera_if/dvp_rx_controller/rtl/drc_regmap.v
+./../ip/camera_if/dvp_rx_controller/rtl/drc_resizer.v
+./../ip/camera_if/dvp_rx_controller/rtl/drc_xclk_gen.v
+# Display IF (DBI TX Controller)
+./../ip/display_if/dbi_tx_controller/rtl/dbi_tx_controller.v
+./../ip/display_if/dbi_tx_controller/rtl/dtc_axis_pxl.v
+./../ip/display_if/dbi_tx_controller/rtl/dtc_dbi_aligner.v
+./../ip/display_if/dbi_tx_controller/rtl/dtc_phy_ctrl.v
+./../ip/display_if/dbi_tx_controller/rtl/dtc_pxl_adapter.v
+./../ip/display_if/dbi_tx_controller/rtl/dtc_reg_map.v
+./../ip/display_if/dbi_tx_controller/rtl/dtc_state_machine.v
+# AXI DMA
+./../ip/dma/axi_dma/axi_dma/rtl/axi_dma.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_as_atx_arb.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_as_atx_fetch.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_as_atx_req.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_as_tx_stat.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_atx_sched.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_chn_man.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_chn_unit.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_tf_split.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_tx_fetch.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_xfer_stat.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_data_mover.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_desc_queue.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_ax.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_b.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_r.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_w.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_data_buf.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_dst_axis.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_rd_host.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_src_axis.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_wr_host.sv
+./../ip/dma/axi_dma/axi_dma/rtl/adma_reg_map.sv
+# AXI Interconnect
+./../ip/interconnect/axi_interconnect/rtl/axi_interconnect.v
+./../ip/interconnect/axi_interconnect/rtl/ai_dispatcher.v
+./../ip/interconnect/axi_interconnect/rtl/ai_slave_arbitration.v
+./../ip/interconnect/axi_interconnect/rtl/dsp_Ax_channel.v
+./../ip/interconnect/axi_interconnect/rtl/dsp_B_channel.v
+./../ip/interconnect/axi_interconnect/rtl/dsp_R_channel.v
+./../ip/interconnect/axi_interconnect/rtl/dsp_read_channel.v
+./../ip/interconnect/axi_interconnect/rtl/dsp_W_channel.v
+./../ip/interconnect/axi_interconnect/rtl/dsp_write_channel.v
+./../ip/interconnect/axi_interconnect/rtl/sa_Ax_channel.v
+./../ip/interconnect/axi_interconnect/rtl/sa_B_channel.v
+./../ip/interconnect/axi_interconnect/rtl/sa_R_channel.v
+./../ip/interconnect/axi_interconnect/rtl/sa_W_channel.v
+./../ip/interconnect/axi_interconnect/rtl/splitting_4kb_masker.v
+# AXI Memory
+./../ip/memory/axi_mem/rtl/axi4_mem.v
+# Camera Controller (SCCB Master Controller)
+./../ip/peripherals/sccb_master_controller/rtl/sccb_master_controller.v
+./../ip/peripherals/sccb_master_controller/rtl/smc_reg_map.v
+./../ip/peripherals/sccb_master_controller/rtl/smc_state_machine.v
+./../ip/peripherals/sccb_master_controller/rtl/smc_timing_gen.v
+# Common
+./../rtl/common/adapter/axi/axi4_ctrl.v
+./../rtl/common/arbiter/iwrr/arb_prior_granter.v
+./../rtl/common/arbiter/iwrr/arb_round_comp_detector.v
+./../rtl/common/arbiter/iwrr/arbiter_iwrr_1cycle.v
+./../rtl/common/converter/bin2gray_converter.v
+./../rtl/common/converter/gray2bin_converter.v
+./../rtl/common/decoder/onehot_decoder/onehot_decoder.v
+./../rtl/common/encoder/onehot_encoder/onehot_encoder.v 
+./../rtl/common/edgedet/edgedet.v 
+./../rtl/common/fifo/async_fifo/asyn_fifo.v 
+./../rtl/common/fifo/sync_fifo/sync_fifo.v 
+./../rtl/common/fifo/sync_fifo/fifo.v
+./../rtl/common/memory/mem.v 
+./../rtl/common/reorder_buffer/reorder_buffer.sv
+./../rtl/common/skid_buffer/skid_buffer.v
+./../rtl/common/skid_buffer/sb_fifo.v
+./../rtl/common/splitter/splitter.v
