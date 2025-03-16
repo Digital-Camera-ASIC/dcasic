@@ -3,7 +3,7 @@
 # Processor (RV32I)
 ./../rtl/processor/picorv32.v
 # Camera IF (DVP TX Controller)
-./../ip/camera_if/dvp_rx_controller/rtl/dvp_rx_controller.sv
+./../ip/camera_if/dvp_rx_controller/rtl/dvp_rx_controller.v
 ./../ip/camera_if/dvp_rx_controller/rtl/drc_cs_state_machine.v
 ./../ip/camera_if/dvp_rx_controller/rtl/drc_ctrl_state.v
 ./../ip/camera_if/dvp_rx_controller/rtl/drc_dvp_data_fifo.v
@@ -23,29 +23,29 @@
 ./../ip/display_if/dbi_tx_controller/rtl/dtc_reg_map.v
 ./../ip/display_if/dbi_tx_controller/rtl/dtc_state_machine.v
 # AXI DMA
-./../ip/dma/axi_dma/axi_dma/rtl/axi_dma.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_as_atx_arb.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_as_atx_fetch.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_as_atx_req.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_as_tx_stat.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_atx_sched.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_chn_man.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_chn_unit.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_tf_split.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_tx_fetch.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_xfer_stat.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_data_mover.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_desc_queue.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_ax.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_b.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_r.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_w.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_data_buf.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_dst_axis.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_rd_host.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_src_axis.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_wr_host.sv
-./../ip/dma/axi_dma/axi_dma/rtl/adma_reg_map.sv
+./../ip/dma/axi_dma/axi_dma/rtl/axi_dma.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_as_atx_arb.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_as_atx_fetch.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_as_atx_req.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_as_tx_stat.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_atx_sched.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_chn_man.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_chn_unit.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_tf_split.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_tx_fetch.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_cm_xfer_stat.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_data_mover.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_desc_queue.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_ax.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_b.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_r.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_axi_w.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_data_buf.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_dst_axis.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_rd_host.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_src_axis.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_dm_wr_host.v
+./../ip/dma/axi_dma/axi_dma/rtl/adma_reg_map.v
 # AXI Interconnect
 ./../ip/interconnect/axi_interconnect/rtl/axi_interconnect.v
 ./../ip/interconnect/axi_interconnect/rtl/ai_dispatcher.v
@@ -82,7 +82,7 @@
 ./../rtl/common/fifo/sync_fifo/sync_fifo.v 
 ./../rtl/common/fifo/sync_fifo/fifo.v
 ./../rtl/common/memory/mem.v 
-./../rtl/common/reorder_buffer/reorder_buffer.sv
+./../rtl/common/reorder_buffer/reorder_buffer.v
 ./../rtl/common/skid_buffer/skid_buffer.v
 ./../rtl/common/skid_buffer/sb_fifo.v
 ./../rtl/common/splitter/splitter.v
