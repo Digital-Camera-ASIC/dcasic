@@ -824,7 +824,7 @@ module dcasic #(
         .AXIS_TDEST_W           (DBUS_TDEST_W),
         .AXIS_TDATA_W           (DBUS_TDATA_W),
         .AXIS_TKEEP_W           (DBUS_TKEEP_W),
-        .AXIS_TSTRB_W           (DBUS_TSTRB_W),
+        .AXIS_TSTRB_W           (DBUS_TSTRB_W)
     ) image_processor (
         .s_aclk                 (sys_clk),
         .s_aresetn              (rst_n),
