@@ -7,6 +7,7 @@
 [submodule "ip/dma/axi_dma"]
 	path = ip/dma/axi_dma
 	url = https://github.com/atfox272/dma.git
+	branch = verilog_version
 [submodule "ip/interconnect/axi_interconnect"]
 	path = ip/interconnect/axi_interconnect
 	url = https://github.com/atfox272/AXI4-Interconnect.git
