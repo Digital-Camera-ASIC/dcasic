@@ -19,3 +19,6 @@
 [submodule "rtl/common"]
 	path = rtl/common
 	url = https://github.com/atfox272/hdl-common.git
+[submodule "ip/image_processor"]
+	path = ip/image_processor
+	url = https://github.com/Digital-Camera-ASIC/Image-Processor.git

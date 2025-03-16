@@ -1,4 +1,4 @@
-// `define IMAGE_PROCESSOR_ENABLE
+`define IMAGE_PROCESSOR_ENABLE
 // `define SILICON_DEBUG
 module dcasic #(
     parameter INTERNAL_CLK      = 50_000_000,
@@ -818,9 +818,24 @@ module dcasic #(
 
 `ifdef IMAGE_PROCESSOR_ENABLE
     image_processor #(
-
-    ) ip (
-
+        .IP_AMT                 (1),
+        .IP_DATA_W              (DBUS_TDATA_W),
+        .AXIS_TID_W             (),
+        .AXIS_TDEST_W           (DBUS_TDEST_W),
+        .AXIS_TDATA_W           (DBUS_TDATA_W),
+        .AXIS_TKEEP_W           (DBUS_TKEEP_W),
+        .AXIS_TSTRB_W           (DBUS_TSTRB_W),
+    ) image_processor (
+        .s_aclk                 (sys_clk),
+        .s_aresetn              (rst_n),
+        .s_tid_i                (),
+        .s_tdest_i              (dbus_tdest),
+        .s_tdata_i              (dbus_tdata),
+        .s_tkeep_i              (dbus_tkeep),
+        .s_tstrb_i              (dbus_tstrb),
+        .s_tlast_i              (dbus_tlast),
+        .s_tvalid_i             (dbus_tvalid),
+        .s_tready_o             (dbus_tready_slv[IP_TREADY_IDX])
     );
 `else
     assign dbus_tready_slv[IP_TREADY_IDX] = ~|(dbus_tdest^IP_TDEST_MSK); // Ready is asserted when the IP is mapped

@@ -68,6 +68,35 @@
 ./../ip/peripherals/sccb_master_controller/rtl/smc_reg_map.v
 ./../ip/peripherals/sccb_master_controller/rtl/smc_state_machine.v
 ./../ip/peripherals/sccb_master_controller/rtl/smc_timing_gen.v
+# Image Processor
+./../ip/image_processor/hdl/image_processor.v
+./../ip/image_processor/AXI4-Frame-Fetch/rtl/axi_controller.v
+./../ip/image_processor/AXI4-Frame-Fetch/rtl/axi_frame_fetch.v
+./../ip/image_processor/AXI4-Frame-Fetch/rtl/cell_buffer.sv
+./../ip/image_processor/AXI4-Frame-Fetch/rtl/cell_cache.v
+./../ip/image_processor/AXI4-Frame-Fetch/rtl/cell_controller.v
+./../ip/image_processor/AXI4-Frame-Fetch/rtl/cell_fetch.v
+./../ip/image_processor/AXI4-Frame-Fetch/rtl/cell_mask.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/hog_svm.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/bin_cal.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/bin_ctr.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/buffer_ctr.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/buffer_element.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/buffer.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/div.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/div2.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/dp_ram.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/dp_ram2.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/hog_fetch.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/hog.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/led_control.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/mag_cal.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/normalize.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/sqrt.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/sum_sq_diff.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/svm_ctrl.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/svm_pe.v
+./../ip/image_processor/HOG_SVM_FPGA/hdl/svm.v
 # Common
 ./../rtl/common/adapter/axi/axi4_ctrl.v
 ./../rtl/common/arbiter/iwrr/arb_prior_granter.v
