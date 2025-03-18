@@ -1,4 +1,5 @@
 {
     "FP_CORE_UTIL": 70,
+    "PL_TARGET_DENSITY": 0.1,
     "CLOCK_PERIOD": 20
 }
