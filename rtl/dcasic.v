@@ -825,7 +825,7 @@ module dcasic #(
         .AXIS_TDATA_W           (DBUS_TDATA_W),
         .AXIS_TKEEP_W           (DBUS_TKEEP_W),
         .AXIS_TSTRB_W           (DBUS_TSTRB_W)
-    ) image_processor (
+    ) iproc (
         .s_aclk                 (sys_clk),
         .s_aresetn              (rst_n),
         .s_tid_i                (),
@@ -835,7 +835,11 @@ module dcasic #(
         .s_tstrb_i              (dbus_tstrb),
         .s_tlast_i              (dbus_tlast),
         .s_tvalid_i             (dbus_tvalid),
-        .s_tready_o             (dbus_tready_slv[IP_TREADY_IDX])
+        .s_tready_o             (dbus_tready_slv[IP_TREADY_IDX]),
+        .o_valid                (),
+        .is_person              (),
+        .sw_id                  (),
+        .led                    ()
     );
 `else
     assign dbus_tready_slv[IP_TREADY_IDX] = ~|(dbus_tdest^IP_TDEST_MSK); // Ready is asserted when the IP is mapped

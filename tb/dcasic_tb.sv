@@ -6,6 +6,7 @@
 `define RST_DUR         9
 
 `define END_TIME        10000000
+// `define END_TIME        1000000
 
 // DVP Physical characteristic
 // -- t_PDV = 5 ns = (5/INTERNAL_CLK_PERIOD)*DUT_CLK_PERIOD = (5/8)*2
