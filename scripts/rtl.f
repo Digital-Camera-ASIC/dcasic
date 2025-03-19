@@ -72,7 +72,7 @@
 ./../ip/image_proc/axi_hog_svm/hdl/image_processor.v
 ./../ip/image_proc/axi_hog_svm/AXI4-Frame-Fetch/rtl/axi_controller.v
 ./../ip/image_proc/axi_hog_svm/AXI4-Frame-Fetch/rtl/axi_frame_fetch.v
-./../ip/image_proc/axi_hog_svm/AXI4-Frame-Fetch/rtl/cell_buffer.sv
+./../ip/image_proc/axi_hog_svm/AXI4-Frame-Fetch/rtl/cell_buffer.v
 ./../ip/image_proc/axi_hog_svm/AXI4-Frame-Fetch/rtl/cell_cache.v
 ./../ip/image_proc/axi_hog_svm/AXI4-Frame-Fetch/rtl/cell_controller.v
 ./../ip/image_proc/axi_hog_svm/AXI4-Frame-Fetch/rtl/cell_fetch.v
