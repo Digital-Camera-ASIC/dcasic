@@ -41,6 +41,13 @@ if __name__ == "__main__":
     img_file = 'output.jpg'
     width = 320  # Set the width of the image
     height = 240  # Set the height of the image
-
-    remove_first_three_lines(txt_file)
+    with open(txt_file, 'r') as file:
+        first_line = file.readline().strip()
+    try:
+        if len(first_line) == 4 and int(first_line, 16) <= 0xFFFF:
+            pass  # First line is valid, skip removing lines
+        else:
+            remove_first_three_lines(txt_file)
+    except ValueError:
+        remove_first_three_lines(txt_file)
     txt_to_img(txt_file, img_file, width, height)
