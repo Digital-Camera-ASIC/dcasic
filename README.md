@@ -99,12 +99,15 @@ Requirements
 Git:
   ```sh
   git clone https://github.com/Digital-Camera-ASIC/dcasic.git
+  cd ./dcasic
   git submodule update --init --recursive
-  cd ./dcasic/script
   ```
-
+Pull the updated code:
+  ```
+  git submodule update --recursive
+  ```
 ### RTL generation instruction
-
+Make sure you are in `dcasic/script`
 1. In linux, run:
     ```sh
     make openlane_gen
@@ -114,7 +117,7 @@ Git:
     mkdir -p openlane
     python openlane_gen.py rtl.f openlane
    ```
-All RTL files are generated in `openlane` folder. The top is dcasic.v
+All RTL files are generated in `openlane` folder. The top is `dcasic.v`
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
