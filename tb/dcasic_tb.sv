@@ -5,8 +5,7 @@
 `define RST_DLY_START   3
 `define RST_DUR         9
 
-`define END_TIME        10000000
-// `define END_TIME        1000000
+`define END_TIME        6700000
 
 // DVP Physical characteristic
 // -- t_PDV = 5 ns = (5/INTERNAL_CLK_PERIOD)*DUT_CLK_PERIOD = (5/8)*2
@@ -85,9 +84,6 @@ module dcasic_tb;
 
     initial begin
         dvp_driver();
-    end
-    initial begin
-        #(`END_TIME) $finish;
     end
 
     /*      DeepCode        */
@@ -182,7 +178,6 @@ module dcasic_tb;
                                 dvp_href_i  <= 1'b1;
                                 // dvp_d_i     <= tx_cnt%32;
                                 dvp_d_i     <= (tx_cnt%2 == 0) ? input_img[tx_cnt/2][15:8] : input_img[tx_cnt/2][7:0];
-                                
                             end
                         end
                     end
@@ -219,6 +214,20 @@ module dcasic_tb;
     endtask
     /* ------------------------------ DVP RX Controller ------------------------------ */
 
+
+initial begin
+    $readmemh("../ip/image_proc/axi_hog_svm/HOG_SVM_FPGA/uvm_test_svm/uvc/env/coef_2.txt", dut.iproc.hs.u_svm.u_dp_ram2.ram);
+end
+initial begin
+    wait(dvp_vsync_i === 1'b1); #1;
+    wait(dvp_vsync_i === 1'b0); #1;
+    while (1) begin
+        #1; 
+        @(posedge dvp_href_i); #1;        
+        
+        $display("[INFO]: The DVP sends 1 row (%dth) at time %d", (tx_cnt/(640*2)), $time);
+    end
+end
     
     /* ------------------------------ DBI TX Controller ------------------------------ */ 
     localparam DBI_IMG_IDLE     = 2'd0;
@@ -287,7 +296,7 @@ module dcasic_tb;
 
     always @(negedge sio_c) begin
         if(~rst_n) begin
-          
+            
         end
         else begin
             tx_data_vld <= 0;
