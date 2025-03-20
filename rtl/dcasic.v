@@ -820,6 +820,7 @@ module dcasic #(
     image_processor #(
         .IP_AMT                 (1),
         .IP_DATA_W              (DBUS_TDATA_W),
+        .AXIS_TDEST_MSK         (IP_TDEST_MSK),
         .AXIS_TID_W             (),
         .AXIS_TDEST_W           (DBUS_TDEST_W),
         .AXIS_TDATA_W           (DBUS_TDATA_W),
