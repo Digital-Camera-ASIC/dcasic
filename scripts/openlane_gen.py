@@ -64,6 +64,7 @@ new_config = {
     "CLOCK_NET": "sys_clk",
     "FP_CORE_UTIL": 70,
     "CLOCK_PERIOD": 20,
+    "PNR_SDC_FILE": "dir::src/dcasic.sdc",
     "BASE_SDC_FILE": f"dir::src/dcasic.sdc" if os.path.exists(SDC_DEST) else ""
 }
 
