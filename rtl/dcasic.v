@@ -9,9 +9,9 @@ module dcasic #(
     parameter DBI_IF_D_W        = 8,
     // Instruction Memory
     parameter MP_SIZE           = 32'd512,  // Main Program size:               512 instructions
-    parameter ISR_SIZE          = 32'd16,   // Interrupt Service Routine size:  16  instructions   
+    parameter ISR_SIZE          = 32'd32,   // Interrupt Service Routine size:  16  instructions   
     parameter BOOTLOADER_FILE   = "../firmware/bootloader/bootloader.hex", // Bootloader file of the system
-    parameter ISR_FILE          = "../firmware/isr/isr.hex"
+    parameter ISR_FILE          = "../firmware/isr/isr.hex",
     // Image
     // -- Input frame (From the Camera)
     parameter I_FRM_COL_NUM     = 640,  // Input frame from camera: Number of columns
@@ -355,7 +355,7 @@ module dcasic #(
         .pcpi_rd                (),
         .pcpi_wait              (),
         .pcpi_ready             (),
-        .irq                    ({dma_irq, cam_irq}),
+        .irq                    ({28'h00, dma_irq, cam_irq}),
         .eoi                    (),
         .trace_valid            (),
         .trace_data             ()
@@ -453,12 +453,12 @@ module dcasic #(
         .MEM_BASE_ADDR          (IMEM_BASE_ADDR),
         .MEM_OFFSET             (1),
         .MEM_DATA_W             (CBUS_DATA_W),
-        .MEM_ADDR_W             (IMEM_W),       // 32bit x (2^10)
+        .MEM_ADDR_W             (CBUS_ADDR_W), // 32bit x (2^10)
         .MEM_LATENCY            (1),
         .MEM_INIT_FILE          (),
         .NUM_REGION             (2),
-        .REGION_BASE_ADDR       ({IMEM_ISR_BASE_ADDR,   IMEM_MP_BASE_ADDR}),
-        .REGION_SIZE            ({ISR_SIZE,             MP_SIZE})
+        .REGION_BASE_ADDR       ({{2'b00, IMEM_ISR_BASE_ADDR[31:2]},   {2'b00, IMEM_MP_BASE_ADDR[31:2]}}), // Align to word-access
+        .REGION_SIZE            ({ISR_SIZE,                         MP_SIZE})
     ) im (
         .clk                    (sys_clk),
         .rst_n                  (rst_n),
