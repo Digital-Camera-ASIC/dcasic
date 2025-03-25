@@ -63,6 +63,9 @@
 ./../ip/interconnect/axi_interconnect/rtl/splitting_4kb_masker.v
 # AXI Memory
 ./../ip/memory/axi_mem/rtl/axi4_mem.v
+./../ip/memory/axi_mem/rtl/amem_dispath.v
+./../ip/memory/axi_mem/rtl/amem_dsp_read.v
+./../ip/memory/axi_mem/rtl/amem_dsp_write.v
 # Camera Controller (SCCB Master Controller)
 ./../ip/peripherals/sccb_master_controller/rtl/sccb_master_controller.v
 ./../ip/peripherals/sccb_master_controller/rtl/smc_reg_map.v
@@ -77,6 +80,7 @@
 ./../rtl/common/converter/gray2bin_converter.v
 ./../rtl/common/decoder/onehot_decoder/onehot_decoder.v
 ./../rtl/common/encoder/onehot_encoder/onehot_encoder.v 
+./../rtl/common/encoder/priority_encoder/priority_encoder.v 
 ./../rtl/common/edgedet/edgedet.v 
 ./../rtl/common/fifo/async_fifo/asyn_fifo.v 
 ./../rtl/common/fifo/sync_fifo/sync_fifo.v 

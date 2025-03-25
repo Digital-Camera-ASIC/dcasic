@@ -1,5 +1,6 @@
 // `define IMAGE_PROCESSOR_ENABLE
 // `define SILICON_DEBUG
+`define INIT_PROGRAM
 module dcasic #(
     parameter INTERNAL_CLK      = 50_000_000,
     // DVP Interface
@@ -7,8 +8,10 @@ module dcasic #(
     // DBI Interface
     parameter DBI_IF_D_W        = 8,
     // Instruction Memory
-    parameter IMEM_W            = 9,    // 512 instructions
+    parameter MP_SIZE           = 32'd512,  // Main Program size:               512 instructions
+    parameter ISR_SIZE          = 32'd16,   // Interrupt Service Routine size:  16  instructions   
     parameter BOOTLOADER_FILE   = "../firmware/bootloader/program_0.hex", // Bootloader file of the system
+    parameter ISR_FILE          = "../firmware/bootloader/isr.hex"
     // Image
     // -- Input frame (From the Camera)
     parameter I_FRM_COL_NUM     = 640,  // Input frame from camera: Number of columns
@@ -73,7 +76,11 @@ module dcasic #(
     localparam CBUS_OUST_AMT            = 2;    // Number of outstanding transacitons in the BUS
     // -- Instruction Memory
     localparam IMEM_PREFIX_ADDR         = 3'd0;
+    localparam IMEM_MP_OFFSET           = 32'h0000_0000; // Main program offset
+    localparam IMEM_ISR_OFFSET          = 32'h0001_0000; // ISR program offset
     localparam IMEM_BASE_ADDR           = {IMEM_PREFIX_ADDR, 29'h0000_0000}; // Base address: 0x0000_0000
+    localparam IMEM_MP_BASE_ADDR        = IMEM_BASE_ADDR + IMEM_MP_OFFSET;   // Base address: 0x0000_0000
+    localparam IMEM_ISR_BASE_ADDR       = IMEM_BASE_ADDR + IMEM_ISR_OFFSET;  // Base address: 0x0001_0000
     // -- Display TX configuration Memory
     localparam DSP_PREFIX_ADDR          = 3'd1;
     localparam DSP_BASE_ADDR            = {DSP_PREFIX_ADDR, 29'h0000_0000};  // Base address: 0x2000_0000
@@ -132,7 +139,7 @@ module dcasic #(
     // Image Memory
     localparam IGMEM_BASE_ADDR          = 32'h0000_0000;
     localparam IGMEM_WORD_W             = IBUS_DATA_W;  // Word width
-    localparam IGMEM_SIZE               = P_FRM_SIZE * P_PXL_W / IGMEM_WORD_W; // Memory size
+    localparam integer IGMEM_SIZE       = P_FRM_SIZE * P_PXL_W / IGMEM_WORD_W; // Memory size
 
     // Configuration BUS
     wire    [CBUS_M_ID_W*CBUS_MST_AMT-1:0]          cbus_m_awid_flat;
@@ -286,6 +293,9 @@ module dcasic #(
     wire                                            dbus_tready;
     wire    [DBUS_SLV_AMT-1:0]                      dbus_tready_slv;
     
+    // Interrupt signals
+    wire    [1:0]                                   dma_irq;    // Display DMA interrupt    [0]: TXN_DSP_COMPLETE irq   ||  [1]: TXN_IP_COMPLETED irq
+    wire    [1:0]                                   cam_irq;    // Camera IF interrupt:     [0]: FRAME_CAPTURED irq     ||  [1]: FRAME_STORED irq    
 
     // IP instantiation
     // -- Processor
@@ -305,15 +315,15 @@ module dcasic #(
         .ENABLE_MUL             (0),
         .ENABLE_FAST_MUL        (0),
         .ENABLE_DIV             (0),
-        .ENABLE_IRQ             (0),
-        .ENABLE_IRQ_QREGS       (0),
-        .ENABLE_IRQ_TIMER       (0),
+        .ENABLE_IRQ             (1),
+        .ENABLE_IRQ_QREGS       (1),
+        .ENABLE_IRQ_TIMER       (1),
         .ENABLE_TRACE           (0),
         .REGS_INIT_ZERO         (0),
-        .MASKED_IRQ             (),
+        .MASKED_IRQ             (32'hffff_fff0), // Use 4 interrupt sources
         .LATCHED_IRQ            (),
-        .PROGADDR_RESET         (IMEM_BASE_ADDR),
-        .PROGADDR_IRQ           (),
+        .PROGADDR_RESET         (IMEM_MP_BASE_ADDR),
+        .PROGADDR_IRQ           (IMEM_ISR_BASE_ADDR),
         .STACKADDR              ()
     ) proc (
         .clk                    (sys_clk),
@@ -345,7 +355,7 @@ module dcasic #(
         .pcpi_rd                (),
         .pcpi_wait              (),
         .pcpi_ready             (),
-        .irq                    (),
+        .irq                    ({dma_irq, cam_irq}),
         .eoi                    (),
         .trace_valid            (),
         .trace_data             ()
@@ -439,12 +449,16 @@ module dcasic #(
         .ATX_LEN_W              (CBUS_LEN_W),
         .ATX_SIZE_W             (CBUS_SIZE_W),
         .ATX_RESP_W             (CBUS_RESP_W),
+        .ATX_OUSTD_NUM          (2),        
         .MEM_BASE_ADDR          (IMEM_BASE_ADDR),
         .MEM_OFFSET             (1),
         .MEM_DATA_W             (CBUS_DATA_W),
         .MEM_ADDR_W             (IMEM_W),       // 32bit x (2^10)
         .MEM_LATENCY            (1),
-        .MEM_INIT_FILE          (BOOTLOADER_FILE)
+        .MEM_INIT_FILE          (),
+        .NUM_REGION             (2),
+        .REGION_BASE_ADDR       ({IMEM_ISR_BASE_ADDR,   IMEM_MP_BASE_ADDR}),
+        .REGION_SIZE            ({ISR_SIZE,             MP_SIZE})
     ) im (
         .clk                    (sys_clk),
         .rst_n                  (rst_n),
@@ -619,9 +633,9 @@ module dcasic #(
         .m_bvalid_i             (ibus_bvalid),
         .m_bready_o             (ibus_bready),
 
-        .drc_irq                (),
+        .drc_irq                (cam_irq[0]), // FRAME_CAPTURED interrupt
         .drc_trap               (),
-        .dma_irq                (),
+        .dma_irq                (cam_irq[1]), // FRAME_STORED interrupt
         .dma_trap               ()
     );
 
@@ -767,7 +781,7 @@ module dcasic #(
         .m_tlast_o              (dbus_tlast),
         .m_tvalid_o             (dbus_tvalid),
         .m_tready_i             (dbus_tready),
-        .irq                    (),
+        .irq                    (dma_irq),
         .trap                   ()
     );
     // -- Image Memory
@@ -782,9 +796,11 @@ module dcasic #(
         .MEM_OFFSET             (1),
         .MEM_DATA_W             (IBUS_DATA_W),
         .MEM_ADDR_W             ($clog2(IGMEM_SIZE)),       // 32bit x (2^10)
-        .MEM_SIZE               (IGMEM_SIZE),
         .MEM_LATENCY            (1),
-        .MEM_INIT_FILE          ()
+        .MEM_INIT_FILE          (),
+        .NUM_REGION             (1),
+        .REGION_BASE_ADDR       (IGMEM_BASE_ADDR),
+        .REGION_SIZE            (IGMEM_SIZE)
     ) igm (
         .clk                    (sys_clk),
         .rst_n                  (rst_n),
@@ -825,6 +841,14 @@ module dcasic #(
 `else
     assign dbus_tready_slv[IP_TREADY_IDX] = ~|(dbus_tdest^IP_TDEST_MSK); // Ready is asserted when the IP is mapped
 `endif
+
+`ifdef INIT_PROGRAM
+    initial begin
+        $readmemh(BOOTLOADER_FILE,  im.MEM_REGION_GEN[0].mem.mem); // Initialize the Bootloader
+        $readmemh(ISR_FILE,         im.MEM_REGION_GEN[1].mem.mem); // Initialize the Interrupt Service Rountine
+    end
+`endif 
+
 
     // Connection
     genvar mst_idx;

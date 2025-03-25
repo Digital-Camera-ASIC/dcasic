@@ -1,4 +1,12 @@
 
+MAIN_PROG:
+#####################################################
+######### Set up the Interrupt Environment ##########
+#####################################################
+#   x4: temporary value
+#   x5: temporary value
+    addi x4, x0, 0xff0  # Use 4 interrupt sources
+    maskirq x5, x4      # Set the interrupt mask
 # #####################################################
 # ####### Configure the SCCB Master Controller ########
 # #####################################################

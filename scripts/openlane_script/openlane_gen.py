@@ -8,9 +8,9 @@ SRC_DIR = os.path.join(OPENLANE_DIR, "src")
 RTL_FILE = "rtl.f"
 SDC_SOURCE = "../rtl/dcasic.sdc"
 SDC_DEST = os.path.join(SRC_DIR, "dcasic.sdc")
-PIN_ORDER_SOURCE = "openlane_pin_order.cfg"
+PIN_ORDER_SOURCE = "openlane_script/openlane_pin_order.cfg"
 PIN_ORDER_DEST = os.path.join(OPENLANE_DIR, "pin_order.cfg")
-CONFIG_TEMPLATE = "openlane_config.json"
+CONFIG_TEMPLATE = "openlane_script/openlane_config.json"
 CONFIG_OUTPUT = os.path.join(OPENLANE_DIR, "config.json")
 
 # Remove the existing src directory if it exists

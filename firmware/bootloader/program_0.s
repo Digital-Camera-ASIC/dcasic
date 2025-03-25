@@ -1,7 +1,19 @@
 
+MAIN_PROG:
+#####################################################
+######### Set up the Interrupt Environment ##########
+#####################################################
+#   x4: temporary value
+#   x5: temporary value
+    addi x4, x0, 0xff0  # Use 4 interrupt sources
+    maskirq x5, x4      # Set the interrupt mask
 #####################################################
 ####### Configure the SCCB Master Controller ########
 #####################################################
+#   x4: temporary value
+#   x5: store the CONTROL_BUF address:      0x6000_0010 
+#   x6: store the SUB_ADDR_BUF address:     0x6000_0011
+#   x7: store the WRITE_DATA_BUF address:   0x6000_0012
 # 0. Configure SLV_DVC_ADDR register with value 0x23
     lui x5, 0x60000
     addi x5, x5, 0x00

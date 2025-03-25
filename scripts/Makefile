@@ -4,7 +4,7 @@ OPENLANE_DESIGN_DIR ?= ../../test_env/OpenLane/designs/dcasic
 SETUP_DIR := openlane
 RTL_LIST := rtl.f
 SRC_DIR := $(SETUP_DIR)/src
-PYTHON_SCRIPT := openlane_gen.py
+PYTHON_SCRIPT := openlane_script/openlane_gen.py
 
 
 .PHONY: openlane_gen clean openlane_push
