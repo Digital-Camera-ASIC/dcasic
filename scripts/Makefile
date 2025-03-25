@@ -17,8 +17,8 @@ OS := $(shell uname 2>/dev/null || echo Windows)
 openlane_gen:
 ifeq ($(OS), Windows)
 	@if not exist "$(SRC_DIR)" mkdir "$(SRC_DIR)"
-	@python3 $(PYTHON_SCRIPT) $(RTL_LIST) $(SRC_DIR)
-	@echo "[INFO]: OpenLane source files generated in $(SRC_DIR)"
+	@python $(PYTHON_SCRIPT) "$(RTL_LIST)" "$(SRC_DIR)"
+	@echo [INFO]: OpenLane source files generated in $(SRC_DIR)
 else
 	@mkdir -p $(SRC_DIR)
 	@python3 $(PYTHON_SCRIPT) $(RTL_LIST) $(SRC_DIR)
@@ -28,13 +28,13 @@ endif
 # Push OpenLane folder to the specified design directory
 openlane_push:
 ifeq ($(OS), Windows)
-	@if exist "$(OPENLANE_DESIGN_DIR)" ( 
-		echo "[INFO]: Pushing OpenLane files to $(OPENLANE_DESIGN_DIR)..." & 
-		xcopy /E /I /Y "$(SETUP_DIR)" "$(OPENLANE_DESIGN_DIR)" & 
-		echo "[INFO]: Push complete." 
-	) else ( 
-		echo "[ERROR]: OpenLane design folder does not exist: $(OPENLANE_DESIGN_DIR)" & 
-		exit 1 
+	@if exist "$(OPENLANE_DESIGN_DIR)" ( \
+		echo "[INFO]: Pushing OpenLane files to $(OPENLANE_DESIGN_DIR)..."; \
+		xcopy /E /I /Y "$(SETUP_DIR)" "$(OPENLANE_DESIGN_DIR)" >nul; \
+		echo "[INFO]: Push complete." \
+	) else ( \
+		echo "[ERROR]: OpenLane design folder does not exist: $(OPENLANE_DESIGN_DIR)"; \
+		exit 1 \
 	)
 else
 	@if [ -d "$(OPENLANE_DESIGN_DIR)" ]; then \
@@ -51,9 +51,9 @@ endif
 openlane_clean:
 ifeq ($(OS), Windows)
 	@if exist "$(SETUP_DIR)" ( \
-		del /s /q "$(SETUP_DIR)" && rmdir /s /q "$(SETUP_DIR)" \
+		rmdir /s /q "$(SETUP_DIR)" && echo [INFO]: Cleaned OpenLane directory. \
 	) else ( \
-		echo "[INFO]: No OpenLane directory to clean." \
+		echo [INFO]: No OpenLane directory to clean. \
 	)
 else
 	@rm -rf $(SETUP_DIR)
@@ -62,30 +62,30 @@ endif
 
 # Assemble firmware
 assemble:
+ifeq ($(OS), Windows)
+	@if not defined NAME ( \
+		echo [ERROR]: Please specify NAME=<firmware_name> (in firmware directory) & exit /b 1 \
+	)
+	@if exist "$(FIRMWARE_DIR)\$(NAME)" ( \
+		if exist "$(FIRMWARE_DIR)\$(NAME)\$(NAME).s" ( \
+			if exist "$(FIRMWARE_DIR)\$(NAME)\$(NAME).hex" ( \
+				echo [INFO]: Assembling $(FIRMWARE_DIR)\$(NAME)\$(NAME).s with header $(FIRMWARE_DIR)\$(NAME)\$(NAME).hex & \
+				python $(ASSEMBLER_SCRIPT) "$(FIRMWARE_DIR)\$(NAME)\$(NAME).s" "$(FIRMWARE_DIR)\$(NAME)\$(NAME).hex" & \
+				echo [INFO]: Assembly complete. \
+			) else ( \
+				echo "[ERROR]: File $(FIRMWARE_DIR)\$(NAME)\$(NAME).hex not found." & exit /b 1 \
+			) \
+		) else ( \
+			echo [ERROR]: File $(FIRMWARE_DIR)\$(NAME)\$(NAME).s not found. & exit /b 1 \
+		) \
+	) else ( \
+		echo [ERROR]: Firmware directory $(FIRMWARE_DIR)\$(NAME) not found. & exit /b 1 \
+	)
+else
 	@if [ -z "$(NAME)" ]; then \
 		echo "[ERROR]: Please specify NAME=<firmware_name>"; \
 		exit 1; \
 	fi
-ifeq ($(OS), Windows)
-	@if exist "$(FIRMWARE_DIR)\$(NAME)" ( \
-		if exist "$(FIRMWARE_DIR)\$(NAME)\$(NAME).s" ( \
-			if exist "$(FIRMWARE_DIR)\$(NAME)\$(NAME).h" ( \
-				echo "[INFO]: Assembling $(FIRMWARE_DIR)\$(NAME)\$(NAME).s with header $(FIRMWARE_DIR)\$(NAME)\$(NAME).h"; \
-				python3 $(ASSEMBLER_SCRIPT) "$(FIRMWARE_DIR)\$(NAME)\$(NAME).s" "$(FIRMWARE_DIR)\$(NAME)\$(NAME).h"; \
-				echo "[INFO]: Assembly complete." \
-			) else ( \
-				echo "[ERROR]: File $(FIRMWARE_DIR)\$(NAME)\$(NAME).h not found."; \
-				exit 1 \
-			) \
-		) else ( \
-			echo "[ERROR]: File $(FIRMWARE_DIR)\$(NAME)\$(NAME).s not found."; \
-			exit 1 \
-		) \
-	) else ( \
-		echo "[ERROR]: Firmware directory $(FIRMWARE_DIR)\$(NAME) not found."; \
-		exit 1 \
-	)
-else
 	@if [ -d "$(FIRMWARE_DIR)/$(NAME)" ]; then \
 		S_FILE="$(FIRMWARE_DIR)/$(NAME)/$(NAME).s"; \
 		H_FILE="$(FIRMWARE_DIR)/$(NAME)/$(NAME).hex"; \
