@@ -20,7 +20,7 @@ MAIN_PROG:
     addi x4, x0, 0x23
     sb x4, 0(x5)
 # 1. Setup address value
-    lui x5,0x60000      
+    lui x5, 0x60000      
     addi x5, x5, 0x10   # x5: 0x6000_0010 (CONTROL_BUF address)
     addi x6, x5, 0x01   # x6: 0x6000_0011 (SUB_ADDR_BUF address)
     addi x7, x5, 0x02   # x7: 0x6000_0012 (WRITE_DATA_BUF address)

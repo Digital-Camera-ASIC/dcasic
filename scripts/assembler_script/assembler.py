@@ -1,10 +1,19 @@
 import re
+import sys
 
 # Define instruction formats and their encoding information
 INSTRUCTION_SET = {
     # R type
     "add":      {"type": "R", "opcode": 0b0110011, "funct3": 0b000, "funct7": 0b0000000},
     "sub":      {"type": "R", "opcode": 0b0110011, "funct3": 0b000, "funct7": 0b0100000},
+    "sll":      {"type": "R", "opcode": 0b0110011, "funct3": 0b001, "funct7": 0b0000000},
+    "slt":      {"type": "R", "opcode": 0b0110011, "funct3": 0b010, "funct7": 0b0000000},
+    "sltu":     {"type": "R", "opcode": 0b0110011, "funct3": 0b011, "funct7": 0b0000000},
+    "xor":      {"type": "R", "opcode": 0b0110011, "funct3": 0b100, "funct7": 0b0000000},
+    "srl":      {"type": "R", "opcode": 0b0110011, "funct3": 0b101, "funct7": 0b0000000},
+    "sra":      {"type": "R", "opcode": 0b0110011, "funct3": 0b101, "funct7": 0b0100000},
+    "or":       {"type": "R", "opcode": 0b0110011, "funct3": 0b110, "funct7": 0b0000000},
+    "and":      {"type": "R", "opcode": 0b0110011, "funct3": 0b111, "funct7": 0b0000000},
     # I type
     "addi":     {"type": "I", "opcode": 0b0010011, "funct3": 0b000},
     "slti":     {"type": "I", "opcode": 0b0010011, "funct3": 0b010},
@@ -142,7 +151,7 @@ def parse_assembly(assembly_code):
             ],  # Replace labels with relative offsets
             info.get("custom", False)
         )
-        print(operands)
+        # print(operands)
 
         binary_instr = encode_instruction(instr, operands, info)
         machine_code.append(f"{binary_instr:032b}")
@@ -150,24 +159,23 @@ def parse_assembly(assembly_code):
     return machine_code
 
 # Main function to run the assembler
-def run_assembler():
-    with open("program_0.s", "r") as file:
+def run_assembler(asm_prog_path, mc_prog_path):
+    with open(asm_prog_path, "r") as file:
         assembly_code = file.read()
+    
     machine_code = parse_assembly(assembly_code)
-    for instr in machine_code:
-        print(f"{int(instr, 2):08X}")
+
+    with open(mc_prog_path, "w") as file:
+        for instr in machine_code:
+            file.write(f"{int(instr, 2):08X}\n")
 
 if __name__ == "__main__":
-    run_assembler()
+    # Pass the path of source assembly and destination machine code
+    if len(sys.argv) != 3:
+        print("[ERROR]: You should pass the path of the program \n python3 assembler.py <SRC_PROG_PATH> <DST_PROG_PATH>")
+        sys.exit(1)
 
-# # Main function to run the assembler
-# def run_assembler():
-#     assembly_code = """
-#     lui x5, 60000
-#     addi x5, x5, 0
-#     addi x4, x0, 23
-#     sw x4, 0(x5)
-#     """
+    SRC_PROG_PATH = sys.argv[1]
+    DST_PROG_PATH = sys.argv[2]
 
-# if __name__ == "__main__":
-#     run_assembler()
+    run_assembler(SRC_PROG_PATH, DST_PROG_PATH)

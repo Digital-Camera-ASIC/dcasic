@@ -10,8 +10,8 @@ module dcasic #(
     // Instruction Memory
     parameter MP_SIZE           = 32'd512,  // Main Program size:               512 instructions
     parameter ISR_SIZE          = 32'd16,   // Interrupt Service Routine size:  16  instructions   
-    parameter BOOTLOADER_FILE   = "../firmware/bootloader/program_0.hex", // Bootloader file of the system
-    parameter ISR_FILE          = "../firmware/bootloader/isr.hex"
+    parameter BOOTLOADER_FILE   = "../firmware/bootloader/bootloader.hex", // Bootloader file of the system
+    parameter ISR_FILE          = "../firmware/isr/isr.hex"
     // Image
     // -- Input frame (From the Camera)
     parameter I_FRM_COL_NUM     = 640,  // Input frame from camera: Number of columns

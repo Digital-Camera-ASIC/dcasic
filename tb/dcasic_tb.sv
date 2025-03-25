@@ -43,7 +43,7 @@ module dcasic_tb;
     logic                       debug_0;
 
     dcasic #(
-        .BOOTLOADER_FILE("../firmware/test/sim_0.hex")
+        .BOOTLOADER_FILE("../firmware/4sim/4sim.hex")
     ) dut (
         .*
     );
