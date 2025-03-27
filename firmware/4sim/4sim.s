@@ -301,7 +301,7 @@ FLAG_5:
     sw x4, 0(x6)
 # CHN_IRQ_MASK register
     addi x6, x5, 0x03 # Reg address: 0x5000_0003
-    addi x4, x0, 0b00000011 # Enable transfer-completed & transfer-queued interrupt
+    addi x4, x0, 0b00000001 # Enable transfer-completed
     sw x4, 0(x6)
 # CHN_ARBIT register
     addi x6, x5, 0x04 # Reg address: 0x5000_0004
@@ -373,11 +373,11 @@ FLAG_5:
     sw x4, 0(x5)
 # CHN_FLAGS[0] register
     addi x5, x7, 0x02   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x03   # Enable 2D transfer & cyclic transfer mode
+    addi x4, x0, 0x01   # Enable 2D transfer mode
     sw x4, 0(x5)
 # CHN_IRQ_MASK[0] register
     addi x5, x7, 0x03   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x03   # Enable transfer-completed & transfer-queued interrupt
+    addi x4, x0, 0x01   # Enable transfer-completed
     sw x4, 0(x5)
 # CHN_ARBIT_RATE[0] register
     addi x5, x7, 0x04   # register_address = DMA_base_address + register_offset 
@@ -385,7 +385,7 @@ FLAG_5:
     sw x4, 0(x5)
 # ATX_ID[0] register
     addi x5, x7, 0x05   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x01   # Set ID of transaction's channel 0
+    addi x4, x0, 0x00   # Set ID of transaction's channel 0
     sw x4, 0(x5)
 # ATX_SRC_BURST[0] register
     addi x5, x7, 0x06   # register_address = DMA_base_address + register_offset 
@@ -416,25 +416,25 @@ FLAG_5:
     addi x5, x7, 0x0D   # register_address = DMA_base_address + register_offset 
     addi x4, x0, 10    
     sw x4, 0(x5) 
-# TRANSFER_SUBMIT[0] register
-    lui x5, 0x00001     # RW1S offset: 0x1000
-    add x5, x5, x7      # RW1S_base_address = CHN0_base_address + RW1S_offset  
-    addi x5, x5, 0x00   # register_address = RW1S_base_address + register_offset 
-    addi x4, x0, 0x01    
-    sw x4, 0(x5) 
+# # TRANSFER_SUBMIT[0] register
+#     lui x5, 0x00001     # RW1S offset: 0x1000
+#     add x5, x5, x7      # RW1S_base_address = CHN0_base_address + RW1S_offset  
+#     addi x5, x5, 0x00   # register_address = RW1S_base_address + register_offset 
+#     addi x4, x0, 0x01    
+#     sw x4, 0(x5) 
 
     
 # CHN_CONTROL[1] register
     addi x5, x8, 0x01   # register_address = CHN1_base_address + register_offset 
     addi x4, x0, 0x01   # Enable the Channel
     sw x4, 0(x5)
-# CHN_FLAGS[0] register
+# CHN_FLAGS[1] register
     addi x5, x8, 0x02   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x03   # Enable 2D transfer & cyclic transfer mode
+    addi x4, x0, 0x01   # Enable 2D transfer mode
     sw x4, 0(x5)
 # CHN_IRQ_MASK[1] register
     addi x5, x8, 0x03   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x03   # Enable transfer-completed & transfer-queued interrupt
+    addi x4, x0, 0x01   # Enable transfer-completed
     sw x4, 0(x5)
 # CHN_ARBIT_RATE[1] register
     addi x5, x8, 0x04   # register_address = DMA_base_address + register_offset 
@@ -442,7 +442,7 @@ FLAG_5:
     sw x4, 0(x5)
 # ATX_ID[1] register
     addi x5, x8, 0x05   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x02   # Set ID of transaction's channel 1
+    addi x4, x0, 0x01   # Set ID of transaction's channel 1
     sw x4, 0(x5)
 # ATX_SRC_BURST[1] register
     addi x5, x8, 0x06   # register_address = DMA_base_address + register_offset 
@@ -473,12 +473,12 @@ FLAG_5:
     addi x5, x8, 0x0D   # register_address = DMA_base_address + register_offset 
     addi x4, x0, 10    
     sw x4, 0(x5) 
-# TRANSFER_SUBMIT[1] register
-    lui x5, 0x00001     # RW1S offset: 0x1000
-    add x5, x5, x8      # RW1S_base_address = CHN1_base_address + RW1S_offset  
-    addi x5, x5, 0x00   # register_address = RW1S_base_address + register_offset 
-    addi x4, x0, 0x01    
-    sw x4, 0(x5) 
+# # TRANSFER_SUBMIT[1] register
+#     lui x5, 0x00001     # RW1S offset: 0x1000
+#     add x5, x5, x8      # RW1S_base_address = CHN1_base_address + RW1S_offset  
+#     addi x5, x5, 0x00   # register_address = RW1S_base_address + register_offset 
+#     addi x4, x0, 0x01    
+#     sw x4, 0(x5) 
     
 
 

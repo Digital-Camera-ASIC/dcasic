@@ -843,7 +843,7 @@ module dcasic #(
 `endif
 
 `ifdef INIT_PROGRAM
-    initial begin
+    initial begin // In Quartus, DO NOT initialize ROM here
         $readmemh(BOOTLOADER_FILE,  im.MEM_REGION_GEN[0].mem.mem); // Initialize the Bootloader
         $readmemh(ISR_FILE,         im.MEM_REGION_GEN[1].mem.mem); // Initialize the Interrupt Service Rountine
     end
