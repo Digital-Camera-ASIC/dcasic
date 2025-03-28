@@ -39,6 +39,10 @@ module dcasic_tb;
     // Camera Controller Interface
     logic                       sio_c;
     wire                        sio_d;
+    // UART interface
+    logic                       rx;
+    logic                       tx;
+
 
     logic                       debug_0;
 

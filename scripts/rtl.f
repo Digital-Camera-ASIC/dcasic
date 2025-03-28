@@ -71,6 +71,12 @@
 ./../ip/peripherals/sccb_master_controller/rtl/smc_reg_map.v
 ./../ip/peripherals/sccb_master_controller/rtl/smc_state_machine.v
 ./../ip/peripherals/sccb_master_controller/rtl/smc_timing_gen.v
+# UART Controller
+./../ip/peripherals/uart_controller/rtl/uart_ctrl.v
+./../ip/peripherals/uart_controller/rtl/uc_rx.v
+./../ip/peripherals/uart_controller/rtl/uc_tx.v
+./../ip/peripherals/uart_controller/rtl/uc_baud_gen.v
+./../ip/peripherals/uart_controller/rtl/uc_regmap.v
 # Common
 ./../rtl/common/adapter/axi/axi4_ctrl.v
 ./../rtl/common/arbiter/iwrr/arb_prior_granter.v

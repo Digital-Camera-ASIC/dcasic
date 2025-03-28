@@ -1,5 +1,6 @@
 // `define IMAGE_PROCESSOR_ENABLE
 // `define SILICON_DEBUG
+`define OPENLANE_DEBUG
 `define INIT_PROGRAM
 module dcasic #(
     parameter INTERNAL_CLK      = 50_000_000,
@@ -44,7 +45,10 @@ module dcasic #(
     inout   [DBI_IF_D_W-1:0]    dbi_d_o,
     // Camera Controller Interface
     output                      sio_c,
-    inout                       sio_d
+    inout                       sio_d,
+    // UART interface
+    output                      tx,
+    input                       rx
 
 `ifdef SILICON_DEBUG
     ,output                     debug_0
@@ -62,7 +66,7 @@ module dcasic #(
     // ================================== Configuration BUS ===================================
     // ========================================================================================
     localparam CBUS_MST_AMT             = 1;    // 1 master - processor
-    localparam CBUS_SLV_AMT             = 5;    // 5 slaves: IMEM + DSP + CAM + SCCB + DMA + UART
+    localparam CBUS_SLV_AMT             = 6;    // 5 slaves: IMEM + DSP + CAM + SCCB + DMA + UART
     localparam CBUS_MST_MAP_W           = $clog2(CBUS_MST_AMT);
     localparam CBUS_SLV_MAP_W           = $clog2(CBUS_SLV_AMT);
     localparam CBUS_DATA_W              = 32;
@@ -93,6 +97,9 @@ module dcasic #(
     // -- DMA Configuration interface
     localparam DMA_PREFIX_ADDR          = 3'd4;
     localparam DMA_BASE_ADDR            = {DMA_PREFIX_ADDR, 29'h0000_0000};  // Base address: 0x8000_0000
+    // -- UART configuration Memory
+    localparam UART_PREFIX_ADDR         = 3'd5;
+    localparam UART_BASE_ADDR           = {UART_PREFIX_ADDR, 29'h0000_0000}; // Base address: 0xA000_0000
 
     // ========================================================================================
     // ====================================== Image BUS =======================================
@@ -682,6 +689,48 @@ module dcasic #(
         .sio_c                  (sio_c),
         .sio_d                  (sio_d)
     );
+    // -- UART
+    uart_ctrl #(
+        .INTERNAL_CLOCK         (INTERNAL_CLK),
+        .ATX_BASE_ADDR          (UART_BASE_ADDR),
+        .ATX_DATA_W             (8),
+        .ATX_ADDR_W             (CBUS_ADDR_W),
+        .ATX_ID_W               (CBUS_S_ID_W),
+        .ATX_LEN_W              (CBUS_LEN_W),
+        .ATX_SIZE_W             (CBUS_SIZE_W),
+        .ATX_RESP_W             (CBUS_RESP_W)
+    ) uart (
+        .clk                    (sys_clk),
+        .rst_n                  (rst_n),
+        .RX                     (rx),
+        .TX                     (tx),
+        .s_awid_i               (cbus_s_awid[UART_PREFIX_ADDR]),
+        .s_awaddr_i             (cbus_s_awaddr[UART_PREFIX_ADDR]),
+        .s_awburst_i            (cbus_s_awburst[UART_PREFIX_ADDR]),
+        .s_awlen_i              (cbus_s_awlen[UART_PREFIX_ADDR]),
+        .s_awvalid_i            (cbus_s_awvalid[UART_PREFIX_ADDR]),
+        .s_awready_o            (cbus_s_awready[UART_PREFIX_ADDR]),
+        .s_wdata_i              (cbus_s_wdata[UART_PREFIX_ADDR][7:0]),
+        .s_wlast_i              (cbus_s_wlast[UART_PREFIX_ADDR]),
+        .s_wvalid_i             (cbus_s_wvalid[UART_PREFIX_ADDR]),
+        .s_wready_o             (cbus_s_wready[UART_PREFIX_ADDR]),
+        .s_bid_o                (cbus_s_bid[UART_PREFIX_ADDR]),
+        .s_bresp_o              (cbus_s_bresp[UART_PREFIX_ADDR]),
+        .s_bvalid_o             (cbus_s_bvalid[UART_PREFIX_ADDR]),
+        .s_bready_i             (cbus_s_bready[UART_PREFIX_ADDR]),
+        .s_arid_i               (cbus_s_arid[UART_PREFIX_ADDR]),
+        .s_araddr_i             (cbus_s_araddr[UART_PREFIX_ADDR]),
+        .s_arburst_i            (cbus_s_arburst[UART_PREFIX_ADDR]),
+        .s_arlen_i              (cbus_s_arlen[UART_PREFIX_ADDR]),
+        .s_arvalid_i            (cbus_s_arvalid[UART_PREFIX_ADDR]),
+        .s_arready_o            (cbus_s_arready[UART_PREFIX_ADDR]),
+        .s_rid_o                (cbus_s_rid[UART_PREFIX_ADDR]),
+        .s_rdata_o              (cbus_s_rdata[UART_PREFIX_ADDR][7:0]),
+        .s_rresp_o              (cbus_s_rresp[UART_PREFIX_ADDR]),
+        .s_rlast_o              (cbus_s_rlast[UART_PREFIX_ADDR]),
+        .s_rvalid_o             (cbus_s_rvalid[UART_PREFIX_ADDR]),
+        .s_rready_i             (cbus_s_rready[UART_PREFIX_ADDR])
+    );
 
     // -- DMA
     axi_dma #(
@@ -861,6 +910,9 @@ module dcasic #(
     assign cbus_m_arburst[0]   = 2'b01; // Always increment
     assign cbus_m_arlen[0]     = {CBUS_LEN_W{1'b0}};
     assign dbus_tready      = |dbus_tready_slv;
+`ifdef OPENLANE_DEBUG
+    assign cbus_s_rdata[UART_PREFIX_ADDR][31:8] = {3{cbus_s_rdata[UART_PREFIX_ADDR][7:0]}};
+`endif
     generate
         for(mst_idx = 0; mst_idx < CBUS_MST_AMT; mst_idx = mst_idx + 1) begin   : AXI4_MST
             assign cbus_m_awid_flat[CBUS_M_ID_W*(mst_idx+1)-1-:CBUS_M_ID_W]         = cbus_m_awid[mst_idx];

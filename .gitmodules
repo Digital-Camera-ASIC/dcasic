@@ -20,3 +20,6 @@
 [submodule "rtl/common"]
 	path = rtl/common
 	url = https://github.com/atfox272/hdl-common.git
+[submodule "ip/peripherals/uart_controller"]
+	path = ip/peripherals/uart_controller
+	url = https://github.com/atfox272/uart.git
