@@ -26,6 +26,8 @@ INSTRUCTION_SET = {
 
     "lb":       {"type": "I", "opcode": 0b0000011, "funct3": 0b000},
     "lw":       {"type": "I", "opcode": 0b0000011, "funct3": 0b010},
+
+    "jalr":     {"type": "I", "opcode": 0b1100111, "funct3": 0b000},
     # S type
     "sb":       {"type": "S", "opcode": 0b0100011, "funct3": 0b000},
     "sw":       {"type": "S", "opcode": 0b0100011, "funct3": 0b010},
@@ -142,7 +144,7 @@ def parse_assembly(assembly_code):
         
         # print(tokens)
         pc = len(machine_code) * 4  # Calculate the current program counter (PC)
-        # print(f"[INFO]: Processing instruction with PC {pc}\t(Instr order {int(pc/4)})\t{line}")
+        print(f"[INFO]: Processing instruction with PC {pc}\t(Instr order {int(pc/4)}) \t{line}")
 
         operands = parse_operands(
             [
@@ -164,7 +166,12 @@ def run_assembler(asm_prog_path, mc_prog_path):
         assembly_code = file.read()
     
     machine_code = parse_assembly(assembly_code)
-
+    # Check if the output file exists, if not, create it
+    try:
+        with open(mc_prog_path, "x") as file:
+            pass  # Create the file if it doesn't exist
+    except FileExistsError:
+        pass  # File already exists, no action needed
     with open(mc_prog_path, "w") as file:
         for instr in machine_code:
             file.write(f"{int(instr, 2):08X}\n")

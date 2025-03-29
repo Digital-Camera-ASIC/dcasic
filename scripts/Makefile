@@ -68,13 +68,9 @@ ifeq ($(OS), Windows)
 	)
 	@if exist "$(FIRMWARE_DIR)\$(NAME)" ( \
 		if exist "$(FIRMWARE_DIR)\$(NAME)\$(NAME).s" ( \
-			if exist "$(FIRMWARE_DIR)\$(NAME)\$(NAME).hex" ( \
-				echo [INFO]: Assembling $(FIRMWARE_DIR)\$(NAME)\$(NAME).s with header $(FIRMWARE_DIR)\$(NAME)\$(NAME).hex & \
-				python $(ASSEMBLER_SCRIPT) "$(FIRMWARE_DIR)\$(NAME)\$(NAME).s" "$(FIRMWARE_DIR)\$(NAME)\$(NAME).hex" & \
-				echo [INFO]: Assembly complete. \
-			) else ( \
-				echo "[ERROR]: File $(FIRMWARE_DIR)\$(NAME)\$(NAME).hex not found." & exit /b 1 \
-			) \
+			echo [INFO]: Assembling $(FIRMWARE_DIR)\$(NAME)\$(NAME).s with header $(FIRMWARE_DIR)\$(NAME)\$(NAME).hex & \
+			python $(ASSEMBLER_SCRIPT) "$(FIRMWARE_DIR)\$(NAME)\$(NAME).s" "$(FIRMWARE_DIR)\$(NAME)\$(NAME).hex" & \
+			echo [INFO]: Assembly complete. \
 		) else ( \
 			echo [ERROR]: File $(FIRMWARE_DIR)\$(NAME)\$(NAME).s not found. & exit /b 1 \
 		) \
