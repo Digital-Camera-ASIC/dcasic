@@ -10,7 +10,7 @@ BOOTLOADER_PROG:
     #   x12:    store temporary value
     #   x13:    store temporary value
     lui x4, 0xA0000     # Base address of the UART
-    add x4, x4, 0x20    # Address of the UART_RX register (0xA000_0020)
+    addi x4, x4, 0x20    # Address of the UART_RX register (0xA000_0020)
     lui x11, 0x00010    # Address of main program (0x0001_0000)
     addi x6, x0, 0      # rx_cnt = 0
     addi x7, x0, 0      # word_data = 0
