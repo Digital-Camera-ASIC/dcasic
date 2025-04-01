@@ -1,6 +1,6 @@
 // `define IMAGE_PROCESSOR_ENABLE
 // `define SILICON_DEBUG
-`define OPENLANE_DEBUG
+// `define OPENLANE_DEBUG
 `define INIT_PROGRAM
 module dcasic #(
     parameter INTERNAL_CLK      = 50_000_000,
@@ -9,10 +9,10 @@ module dcasic #(
     // DBI Interface
     parameter DBI_IF_D_W        = 8,
     // Instruction Memory
-    parameter MP_SIZE           = 32'd512,  // Main Program size:               512 instructions
-    parameter ISR_SIZE          = 32'd32,   // Interrupt Service Routine size:  16  instructions   
+    parameter BOOT_SIZE         = 32'd64,   // Bootloader program size:         max 32  instructions
+    parameter MP_SIZE           = 32'd512,  // Main Program size:               max 512 instructions
+    parameter ISR_SIZE          = 32'd32,   // Interrupt Service Routine size:  max 16  instructions   
     parameter BOOTLOADER_FILE   = "../firmware/bootloader/bootloader.hex", // Bootloader file of the system
-    parameter ISR_FILE          = "../firmware/isr/isr.hex",
     // Image
     // -- Input frame (From the Camera)
     parameter I_FRM_COL_NUM     = 640,  // Input frame from camera: Number of columns
@@ -26,8 +26,13 @@ module dcasic #(
 
 ) (
     input                       sys_clk,
-    output                      sys_trap_o,
+    output                      sys_trap,
     input                       rst_n,
+`ifdef IMAGE_PROCESSOR_ENABLE
+    input                       iproc_clk,
+    output                      iproc_trap,
+    input                       iproc_rst_n,
+`endif
     // Camera RX Interface
     input   [DVP_DATA_W-1:0]    dvp_d_i,
     input                       dvp_href_i,
@@ -80,11 +85,14 @@ module dcasic #(
     localparam CBUS_OUST_AMT            = 2;    // Number of outstanding transacitons in the BUS
     // -- Instruction Memory
     localparam IMEM_PREFIX_ADDR         = 3'd0;
-    localparam IMEM_MP_OFFSET           = 32'h0000_0000; // Main program offset
-    localparam IMEM_ISR_OFFSET          = 32'h0001_0000; // ISR program offset
+    localparam IMEM_REGION_NUM          = 3; // Bootloader + Main program + ISR regions
+    localparam IMEM_BOOT_OFFSET         = 32'h0000_0000; // Bootloader program offset
+    localparam IMEM_MP_OFFSET           = 32'h0001_0000; // Main program offset
+    localparam IMEM_ISR_OFFSET          = 32'h0002_0000; // ISR program offset
     localparam IMEM_BASE_ADDR           = {IMEM_PREFIX_ADDR, 29'h0000_0000}; // Base address: 0x0000_0000
-    localparam IMEM_MP_BASE_ADDR        = IMEM_BASE_ADDR + IMEM_MP_OFFSET;   // Base address: 0x0000_0000
-    localparam IMEM_ISR_BASE_ADDR       = IMEM_BASE_ADDR + IMEM_ISR_OFFSET;  // Base address: 0x0001_0000
+    localparam IMEM_BOOT_BASE_ADDR      = IMEM_BASE_ADDR + IMEM_BOOT_OFFSET; // Base address: 0x0000_0000
+    localparam IMEM_MP_BASE_ADDR        = IMEM_BASE_ADDR + IMEM_MP_OFFSET;   // Base address: 0x0001_0000
+    localparam IMEM_ISR_BASE_ADDR       = IMEM_BASE_ADDR + IMEM_ISR_OFFSET;  // Base address: 0x0002_0000
     // -- Display TX configuration Memory
     localparam DSP_PREFIX_ADDR          = 3'd1;
     localparam DSP_BASE_ADDR            = {DSP_PREFIX_ADDR, 29'h0000_0000};  // Base address: 0x2000_0000
@@ -329,13 +337,13 @@ module dcasic #(
         .REGS_INIT_ZERO         (0),
         .MASKED_IRQ             (32'hffff_fff0), // Use 4 interrupt sources
         .LATCHED_IRQ            (),
-        .PROGADDR_RESET         (IMEM_MP_BASE_ADDR),
+        .PROGADDR_RESET         (IMEM_BOOT_BASE_ADDR),
         .PROGADDR_IRQ           (IMEM_ISR_BASE_ADDR),
         .STACKADDR              ()
     ) proc (
         .clk                    (sys_clk),
         .resetn                 (rst_n),
-        .trap                   (sys_trap_o),
+        .trap                   (sys_trap),
         .mem_axi_awvalid        (cbus_m_awvalid[0]),
         .mem_axi_awready        (cbus_m_awready[0]),
         .mem_axi_awaddr         (cbus_m_awaddr[0]),
@@ -463,9 +471,9 @@ module dcasic #(
         .MEM_ADDR_W             (CBUS_ADDR_W), // 32bit x (2^10)
         .MEM_LATENCY            (1),
         .MEM_INIT_FILE          (),
-        .NUM_REGION             (2),
-        .REGION_BASE_ADDR       ({{2'b00, IMEM_ISR_BASE_ADDR[31:2]},   {2'b00, IMEM_MP_BASE_ADDR[31:2]}}), // Align to word-access
-        .REGION_SIZE            ({ISR_SIZE,                         MP_SIZE})
+        .NUM_REGION             (IMEM_REGION_NUM),
+        .REGION_BASE_ADDR       ({{2'b00, IMEM_ISR_BASE_ADDR[31:2]},    {2'b00, IMEM_MP_BASE_ADDR[31:2]},   {2'b00, IMEM_BOOT_BASE_ADDR[31:2]}}), // Align to word-access
+        .REGION_SIZE            ({ISR_SIZE,                             MP_SIZE,                            BOOT_SIZE})
     ) im (
         .clk                    (sys_clk),
         .rst_n                  (rst_n),
@@ -885,7 +893,9 @@ module dcasic #(
     image_processor #(
 
     ) ip (
-
+        .clk                    (iproc_clk),
+        .trap                   (iproc_trap),
+        .rst_n                  (iproc_rst_n)
     );
 `else
     assign dbus_tready_slv[IP_TREADY_IDX] = ~|(dbus_tdest^IP_TDEST_MSK); // Ready is asserted when the IP is mapped
@@ -894,9 +904,8 @@ module dcasic #(
 `ifdef INIT_PROGRAM
     initial begin // In Quartus, DO NOT initialize ROM here
         $readmemh(BOOTLOADER_FILE,  im.MEM_REGION_GEN[0].mem.mem); // Initialize the Bootloader
-        $readmemh(ISR_FILE,         im.MEM_REGION_GEN[1].mem.mem); // Initialize the Interrupt Service Rountine
     end
-`endif 
+`endif
 
 
     // Connection
@@ -909,7 +918,7 @@ module dcasic #(
     assign cbus_m_arid[0]      = {CBUS_M_ID_W{1'b0}};
     assign cbus_m_arburst[0]   = 2'b01; // Always increment
     assign cbus_m_arlen[0]     = {CBUS_LEN_W{1'b0}};
-    assign dbus_tready      = |dbus_tready_slv;
+    assign dbus_tready         = |dbus_tready_slv;
 `ifdef OPENLANE_DEBUG
     assign cbus_s_rdata[UART_PREFIX_ADDR][31:8] = {3{cbus_s_rdata[UART_PREFIX_ADDR][7:0]}};
 `endif
