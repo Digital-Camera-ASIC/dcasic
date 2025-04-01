@@ -23,6 +23,8 @@ BOOTLOADER_PROG:
 LOOP:
     # Receive RX data (Wait until rx data is received)
     lb x5, 0(x4)
+    addi x12, x0, 0x0ff # create 8bit mask 
+    and x5, x5, x12
 
     # temp = rx_cnt * 8 (to align with 8bit UART data)
     slli x12, x6, 3 
