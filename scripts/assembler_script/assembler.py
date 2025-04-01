@@ -144,7 +144,7 @@ def parse_assembly(assembly_code):
         
         # print(tokens)
         pc = len(machine_code) * 4  # Calculate the current program counter (PC)
-        print(f"[INFO]: Processing instruction with PC {pc}\t(Instr order {int(pc/4)}) \t{line}")
+        print(f"[INFO]: Processing instruction with PC {hex(pc)}\t(Instr order {int(pc/4)}) \t{line}")
 
         operands = parse_operands(
             [
