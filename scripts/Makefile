@@ -1,24 +1,51 @@
-# User-defined OpenLane design directory (modify as needed)
-OPENLANE_DESIGN_DIR ?= ../../test_env/OpenLane/designs/dcasic
 # OpenLane directories and script
-SETUP_DIR := openlane
+OUTPUT_DIR := output
+OPENLANE_DESIGN_DIR ?= ../../test_env/OpenLane/designs/dcasic
+OPENLANE_SETUP_DIR := $(OUTPUT_DIR)/openlane
 RTL_LIST := rtl.f
-SRC_DIR := $(SETUP_DIR)/src
+SRC_DIR := $(OPENLANE_SETUP_DIR)/src
 PYTHON_SCRIPT := openlane_script/openlane_gen.py
 ASSEMBLER_SCRIPT := assembler_script/assembler.py
 FIRMWARE_DIR := ../firmware
+BITSTREAM_SCRIPT := programmer_script/build.py
+MAIN_HEX := $(FIRMWARE_DIR)/main/main.hex
+ISR_HEX := $(FIRMWARE_DIR)/isr/isr.hex
+BITSTREAM_OUTPUT := $(OUTPUT_DIR)/programmer/bitstream.hex
 
 # Detect OS (Windows or Linux/macOS)
 OS := $(shell uname 2>/dev/null || echo Windows)
 
-.PHONY: openlane_gen clean openlane_push assemble
+.PHONY: openlane_gen clean openlane_push assemble build_bitstream
+
+# Prepare output directory
+prepare:
+ifeq ($(OS), Windows)
+	@if not exist "$(OUTPUT_DIR)" mkdir "$(OUTPUT_DIR)" && echo [INFO]: Created output directory.
+else
+	@mkdir -p $(OUTPUT_DIR)
+	@echo "[INFO]: Created output directory"
+endif
+
+# Clean output directory
+clean:
+ifeq ($(OS), Windows)
+	@if exist "$(OUTPUT_DIR)" ( \
+		rmdir /s /q "$(OUTPUT_DIR)" && echo [INFO]: Cleaned output directory. \
+	) else ( \
+		echo [INFO]: No output directory to clean. \
+	)
+else
+	@rm -rf $(OUTPUT_DIR)
+	@echo "[INFO]: Cleaned output directory"
+endif
 
 # Generate OpenLane source files
-openlane_gen:
+openlane_gen: prepare
 ifeq ($(OS), Windows)
+	@if not exist "$(OPENLANE_SETUP_DIR)" mkdir "$(OPENLANE_SETUP_DIR)"
 	@if not exist "$(SRC_DIR)" mkdir "$(SRC_DIR)"
 	@python $(PYTHON_SCRIPT) "$(RTL_LIST)" "$(SRC_DIR)"
-	@echo [INFO]: OpenLane source files generated in $(SRC_DIR)
+	@echo [INFO]: OpenLane environment files generated in $(OPENLANE_SETUP_DIR)
 else
 	@mkdir -p $(SRC_DIR)
 	@python3 $(PYTHON_SCRIPT) $(RTL_LIST) $(SRC_DIR)
@@ -26,11 +53,11 @@ else
 endif
 
 # Push OpenLane folder to the specified design directory
-openlane_push:
+openlane_push: openlane_gen prepare
 ifeq ($(OS), Windows)
 	@if exist "$(OPENLANE_DESIGN_DIR)" ( \
 		echo "[INFO]: Pushing OpenLane files to $(OPENLANE_DESIGN_DIR)..."; \
-		xcopy /E /I /Y "$(SETUP_DIR)" "$(OPENLANE_DESIGN_DIR)" >nul; \
+		xcopy /E /I /Y "$(OPENLANE_SETUP_DIR)" "$(OPENLANE_DESIGN_DIR)" >nul; \
 		echo "[INFO]: Push complete." \
 	) else ( \
 		echo "[ERROR]: OpenLane design folder does not exist: $(OPENLANE_DESIGN_DIR)"; \
@@ -39,7 +66,7 @@ ifeq ($(OS), Windows)
 else
 	@if [ -d "$(OPENLANE_DESIGN_DIR)" ]; then \
 		echo "[INFO]: Pushing OpenLane files to $(OPENLANE_DESIGN_DIR)..."; \
-		rsync -av --delete $(SETUP_DIR)/ $(OPENLANE_DESIGN_DIR)/; \
+		rsync -av --delete $(OPENLANE_SETUP_DIR)/ $(OPENLANE_DESIGN_DIR)/; \
 		echo "[INFO]: Push complete."; \
 	else \
 		echo "[ERROR]: OpenLane design folder does not exist: $(OPENLANE_DESIGN_DIR)"; \
@@ -47,17 +74,18 @@ else
 	fi
 endif
 
+
 # Clean OpenLane directory
 openlane_clean:
 ifeq ($(OS), Windows)
-	@if exist "$(SETUP_DIR)" ( \
-		rmdir /s /q "$(SETUP_DIR)" && echo [INFO]: Cleaned OpenLane directory. \
+	@if exist "$(OPENLANE_SETUP_DIR)" ( \
+		rmdir /s /q "$(OPENLANE_SETUP_DIR)" && echo [INFO]: Cleaned OpenLane environment. \
 	) else ( \
-		echo [INFO]: No OpenLane directory to clean. \
+		echo [INFO]: No OpenLane environment to clean. \
 	)
 else
-	@rm -rf $(SETUP_DIR)
-	@echo "[INFO]: Cleaned OpenLane directory"
+	@rm -rf $(OPENLANE_SETUP_DIR)
+	@echo "[INFO]: Cleaned OpenLane environment"
 endif
 
 # Assemble firmware
@@ -102,4 +130,49 @@ else
 		echo "[ERROR]: Firmware directory $(FIRMWARE_DIR)/$(NAME) not found."; \
 		exit 1; \
 	fi
+endif
+
+# Build bitstream for programming
+bitstream_build: bitstream_clean prepare
+ifeq ($(OS), Windows)
+	@if exist "$(MAIN_HEX)" ( \
+		if exist "$(ISR_HEX)" ( \
+			if not exist "output/programmer" mkdir "output/programmer" & \
+			echo [INFO]: Building bitstream with main.hex and isr.hex & \
+			python $(BITSTREAM_SCRIPT) "$(BITSTREAM_OUTPUT)" "$(MAIN_HEX)" "$(ISR_HEX)" & \
+			echo [INFO]: Bitstream build complete. \
+		) else ( \
+			echo [ERROR]: File $(ISR_HEX) not found. & exit /b 1 \
+		) \
+	) else ( \
+		echo [ERROR]: File $(MAIN_HEX) not found. & exit /b 1 \
+	)
+else
+	@if [ -f "$(MAIN_HEX)" ]; then \
+		if [ -f "$(ISR_HEX)" ]; then \
+			mkdir -p $(PROGRAMMER_OUTPUT_DIR); \
+			echo "[INFO]: Building bitstream with main.hex and isr.hex"; \
+			python3 $(BITSTREAM_SCRIPT) "$(BITSTREAM_OUTPUT)" "$(MAIN_HEX)" "$(ISR_HEX)"; \
+			echo "[INFO]: Bitstream build complete."; \
+		else \
+			echo "[ERROR]: File $(ISR_HEX) not found."; \
+			exit 1; \
+		fi \
+	else \
+		echo "[ERROR]: File $(MAIN_HEX) not found."; \
+		exit 1; \
+	fi
+endif
+
+# Clean bitstream files in programmer directory
+bitstream_clean:
+ifeq ($(OS), Windows)
+	@if exist "$(OUTPUT_DIR)\programmer" ( \
+		rmdir /s /q "$(OUTPUT_DIR)\programmer" && echo [INFO]: Cleaned programmer directory. \
+	) else ( \
+		echo [INFO]: No programmer directory to clean. \
+	)
+else
+	@rm -rf $(OUTPUT_DIR)/programmer
+	@echo "[INFO]: Cleaned programmer directory"
 endif
