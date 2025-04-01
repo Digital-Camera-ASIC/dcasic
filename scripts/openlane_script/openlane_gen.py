@@ -3,7 +3,7 @@ import shutil
 import json
 
 # Define paths
-OPENLANE_DIR = "openlane"
+OPENLANE_DIR = "output/openlane"
 SRC_DIR = os.path.join(OPENLANE_DIR, "src")
 RTL_FILE = "rtl.f"
 SDC_SOURCE = "../rtl/dcasic.sdc"
