@@ -24,8 +24,11 @@ LOOP:
     # Receive RX data (Wait until rx data is received)
     lb x5, 0(x4)
 
+    # temp = rx_cnt * 8 (to align with 8bit UART data)
+    slli x12, x6, 3 
+
     # rx_buffer |= (rx_data << rx_cnt)
-    sll x5, x5, x6      # Shift rx_data left by rx_cnt
+    sll x5, x5, x12     # Shift rx_data left by (rx_cnt * 8)
     or x7, x7, x5       # OR with rx_buffer
     # Clear RX data buffer
     addi x5, x0, 0      # rx_data = 0
@@ -36,7 +39,7 @@ LOOP:
     # Clear rx data counter when 1 word data is received
     addi x6, x0, 0
 
-    # Store the current word data to the corresponding data
+    # Store the current word data to the corresponding data (addr or data)
     # Check if the current type is address
     bne x8, x0, BUFFER_DATA
     add x9, x7, x0  # addr_instr = rx_buffer
@@ -46,7 +49,7 @@ BUFFER_DATA:
     add x10, x7, x0 # data_instr = rx_buffer
 
     # Check if the current instruction is End-of-Programming (addr: 0xffff_ffff & data: 0xffff_ffff) 
-    sub x12, x0, 1  # Generate mask: 0xffff_ffff
+    addi x12, x0, -1  # Generate mask: 0xffff_ffff
     and x13, x9, x10
     bne x13, x12, STORE_MEM
 
@@ -58,8 +61,8 @@ STORE_MEM:
     sw x10, 0(x9)
 
 TOGGLE_WORD_TYPE:
-    # word_type = !word_type
-    xori x8, x8, 1
+    addi x7, x0, 0 # Clear all bits register
+    xori x8, x8, 1 # word_type = !word_type
     jal x13, LOOP
 
 WORD_REMAIN:
