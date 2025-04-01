@@ -1,4 +1,5 @@
 BOOTLOADER_PROG:
+    #   x3:     store address of RX_CONF register
     #   x4:     store address of the UART_RX register
     #   x5:     store rx data
     #   x6:     store rx counter
@@ -9,13 +10,16 @@ BOOTLOADER_PROG:
     #   x11:    store the address of main program
     #   x12:    store temporary value
     #   x13:    store temporary value
-    lui x4, 0xA0000     # Base address of the UART
-    addi x4, x4, 0x20    # Address of the UART_RX register (0xA000_0020)
+    lui x3, 0xA0000     # Base address of the UART
+    addi x4, x3, 0x20   # Address of the UART_RX register (0xA000_0020)
+    addi x3, x3, 0x01   # Address of the RX_CONF register (0xA000_0001)
     lui x11, 0x00010    # Address of main program (0x0001_0000)
     addi x6, x0, 0      # rx_cnt = 0
     addi x7, x0, 0      # word_data = 0
     addi x8, x0, 0      # word_type = 0 (0: Address, 1: Data)
-
+    # Configure UART (RX) to BD_9600 - 1STOP - NO_PAR - 8DATA  
+    addi x12, x0, 0b00100011
+    sb x12, 0(x3)
 LOOP:
     # Receive RX data (Wait until rx data is received)
     lb x5, 0(x4)
