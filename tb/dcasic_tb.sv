@@ -146,6 +146,16 @@ module dcasic_tb;
         $display("[INFO]: Programming done");
     end
 
+    initial begin : UART_MONITOR
+        logic [7:0] rx_data;
+        logic       rx_error;
+        #(`RST_DLY_START + `RST_DUR + 1);
+
+        forever begin
+            uart_rx(.rx_data(rx_data), .rx_error(rx_error), .rx_baud(9600));
+            $display("[INFO]: UART RX driver receive 0x%2h", rx_data);
+        end
+    end
 
     task automatic uart_tx (
         input [7:0] tx_data,
@@ -199,6 +209,70 @@ module dcasic_tb;
                         txn_st = TXN_IDLE_ST;
                         data_cnt = 0;
                         baud_cnt = (INTERNAL_CLK / tx_baud) - 1;
+                        break;
+                    end
+                end
+            endcase
+        end
+    endtask
+    
+    task automatic uart_rx (
+        output [7:0]    rx_data,
+        output          rx_error,
+        input  int      rx_baud
+    );
+        localparam TXN_IDLE_ST      = 0;
+        localparam TXN_START_BIT_ST = 1;
+        localparam TXN_DATA_BIT_ST  = 2;
+        localparam TXN_STOP_BIT_ST  = 3;
+        int txn_st = TXN_IDLE_ST;
+        int baud_cnt = (INTERNAL_CLK / rx_baud) / 2; // 1/2 baudrate cycle to shift 1/2 phase
+        int data_cnt = 0;
+        // rx_drv
+        while (1'b1) begin
+            aclk_cl;
+            case(txn_st)
+                TXN_IDLE_ST: begin
+                    if(rx_drv == 1'b0) begin
+                        baud_cnt = baud_cnt - 1;
+                        if(baud_cnt == -1) begin // To shift 1/2 phase
+                            txn_st   = TXN_START_BIT_ST;
+                            data_cnt = 0;
+                            baud_cnt = (INTERNAL_CLK / rx_baud) - 1;
+                        end    
+                    end
+                end
+                TXN_START_BIT_ST: begin
+                    baud_cnt = baud_cnt - 1;
+                    if(baud_cnt == -1) begin
+                        txn_st   = TXN_DATA_BIT_ST;
+                        rx_data[data_cnt] = rx_drv;
+                        data_cnt = data_cnt + 1;
+                        baud_cnt = (INTERNAL_CLK / rx_baud) - 1;
+                    end    
+                end
+                TXN_DATA_BIT_ST: begin
+                    baud_cnt = baud_cnt - 1;
+                    if(baud_cnt == -1) begin
+                        if(data_cnt == 8) begin
+                            txn_st   = TXN_STOP_BIT_ST;
+                            rx_error = (rx_drv == 1'b0);
+                            data_cnt = 0;
+                            baud_cnt = (INTERNAL_CLK / rx_baud) / 2; // Recovery the shifted phase
+                        end
+                        else begin
+                            rx_data[data_cnt] = rx_drv;
+                            data_cnt = data_cnt + 1;
+                            baud_cnt = (INTERNAL_CLK / rx_baud) - 1;
+                        end
+                    end    
+                end
+                TXN_STOP_BIT_ST: begin
+                    baud_cnt = baud_cnt - 1;
+                    if(baud_cnt == -1) begin
+                        txn_st = TXN_IDLE_ST;
+                        data_cnt = 0;
+                        baud_cnt = (INTERNAL_CLK / rx_baud) / 2;
                         break;
                     end
                 end
