@@ -1,5 +1,5 @@
 BOOTLOADER_PROG:
-    #   x3:     store address of RX_CONF register
+    #   x3:     store address of UART base address
     #   x4:     store address of the UART_RX register
     #   x5:     store rx data
     #   x6:     store rx counter
@@ -12,19 +12,22 @@ BOOTLOADER_PROG:
     #   x13:    store temporary value
     lui x3, 0xA0000     # Base address of the UART
     addi x4, x3, 0x20   # Address of the UART_RX register (0xA000_0020)
-    addi x3, x3, 0x01   # Address of the RX_CONF register (0xA000_0001)
     lui x11, 0x00010    # Address of main program (0x0001_0000)
     addi x6, x0, 0      # rx_cnt = 0
     addi x7, x0, 0      # word_data = 0
     addi x8, x0, 0      # word_type = 0 (0: Address, 1: Data)
-    # Configure UART (RX) to BD_9600 - 1STOP - NO_PAR - 8DATA  
+    # Configure UART (RX & TX) to BD_9600 - 1STOP - NO_PAR - 8DATA  
     addi x12, x0, 0b00100011
-    sb x12, 0(x3)
+    sb x12, 0(x3)   # TX_CONF register (0xA000_0000)
+    sb x12, 1(x3)   # RX_CONF register (0xA000_0001)
 LOOP:
     # Receive RX data (Wait until rx data is received)
     lb x5, 0(x4)
     addi x12, x0, 0x0ff # create 8bit mask 
     and x5, x5, x12
+
+    # Transmit received RX data via UART TX (0xA000_0010)
+    sb x5, 0x10(x3)
 
     # temp = rx_cnt * 8 (to align with 8bit UART data)
     slli x12, x6, 3 
