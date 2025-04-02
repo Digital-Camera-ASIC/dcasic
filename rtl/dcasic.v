@@ -1,7 +1,6 @@
 // `define IMAGE_PROCESSOR_ENABLE
 // `define SILICON_DEBUG
 // `define OPENLANE_DEBUG
-`define INIT_PROGRAM
 module dcasic #(
     parameter INTERNAL_CLK      = 50_000_000,
     // DVP Interface
@@ -12,7 +11,7 @@ module dcasic #(
     parameter BOOT_SIZE         = 32'd64,   // Bootloader program size:         max 32  instructions
     parameter MP_SIZE           = 32'd512,  // Main Program size:               max 512 instructions
     parameter ISR_SIZE          = 32'd32,   // Interrupt Service Routine size:  max 16  instructions   
-    parameter BOOTLOADER_FILE   = "../firmware/bootloader/bootloader.hex", // Bootloader file of the system
+    parameter BOOTLOADER_FILE   = "../../firmware/bootloader/bootloader.hex", // Bootloader file of the system
     // Image
     // -- Input frame (From the Camera)
     parameter I_FRM_COL_NUM     = 640,  // Input frame from camera: Number of columns
@@ -56,13 +55,13 @@ module dcasic #(
     input                       rx
 
 `ifdef SILICON_DEBUG
-    ,output                     debug_0
+    // ,output                     debug_0
     ,output                     dvp_href_2
     ,output                     dvp_vsync_2
-    ,output                     dvp_pclk_2
-    ,output                     dvp_xclk_2
-    ,output                     dvp_d_i_0
-    ,output                     dvp_d_i_1
+    // ,output                     dvp_pclk_2
+    // ,output                     dvp_xclk_2
+    // ,output                     dvp_d_i_0
+    // ,output                     dvp_d_i_1
 `endif
 
 );
@@ -470,7 +469,7 @@ module dcasic #(
         .MEM_DATA_W             (CBUS_DATA_W),
         .MEM_ADDR_W             (CBUS_ADDR_W), // 32bit x (2^10)
         .MEM_LATENCY            (1),
-        .MEM_INIT_FILE          (),
+        .MEM_INIT_FILE          (BOOTLOADER_FILE),
         .NUM_REGION             (IMEM_REGION_NUM),
         .REGION_BASE_ADDR       ({{2'b00, IMEM_ISR_BASE_ADDR[31:2]},    {2'b00, IMEM_MP_BASE_ADDR[31:2]},   {2'b00, IMEM_BOOT_BASE_ADDR[31:2]}}), // Align to word-access
         .REGION_SIZE            ({ISR_SIZE,                             MP_SIZE,                            BOOT_SIZE})
@@ -901,13 +900,6 @@ module dcasic #(
     assign dbus_tready_slv[IP_TREADY_IDX] = ~|(dbus_tdest^IP_TDEST_MSK); // Ready is asserted when the IP is mapped
 `endif
 
-`ifdef INIT_PROGRAM
-    initial begin // In Quartus, DO NOT initialize ROM here
-        $readmemh(BOOTLOADER_FILE,  im.MEM_REGION_GEN[0].mem.mem); // Initialize the Bootloader
-    end
-`endif
-
-
     // Connection
     genvar mst_idx;
     genvar slv_idx;
@@ -985,12 +977,13 @@ module dcasic #(
         end
     endgenerate
 `ifdef SILICON_DEBUG
-    assign debug_0 = 1'b1;
-    assign dvp_href_2   = dvp_href_i;
-    assign dvp_vsync_2  = dvp_vsync_i;
-    assign dvp_pclk_2   = dvp_pclk_i;
-    assign dvp_xclk_2   = dvp_xclk_o;
-    assign dvp_d_i_0    = dvp_d_i[0];
-    assign dvp_d_i_1    = dvp_d_i[1];
+    // assign debug_0 = 1'b1;
+    assign dvp_href_2   = rx;
+    // assign dvp_vsync_2  = tx;
+    assign dvp_vsync_2  = tx;
+    // assign dvp_pclk_2   = dvp_pclk_i;
+    // assign dvp_xclk_2   = dvp_xclk_o;
+    // assign dvp_d_i_0    = dvp_d_i[0];
+    // assign dvp_d_i_1    = dvp_d_i[1];
 `endif
 endmodule
