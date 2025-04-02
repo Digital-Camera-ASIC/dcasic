@@ -8,6 +8,7 @@ PYTHON_SCRIPT := openlane_script/openlane_gen.py
 ASSEMBLER_SCRIPT := assembler_script/assembler.py
 FIRMWARE_DIR := ../firmware
 BITSTREAM_SCRIPT := programmer_script/build.py
+UPLOAD_SCRIPT := programmer_script/programmer.py
 MAIN_HEX := $(FIRMWARE_DIR)/main/main.hex
 ISR_HEX := $(FIRMWARE_DIR)/isr/isr.hex
 BITSTREAM_OUTPUT := $(OUTPUT_DIR)/programmer/bitstream.hex
@@ -15,7 +16,7 @@ BITSTREAM_OUTPUT := $(OUTPUT_DIR)/programmer/bitstream.hex
 # Detect OS (Windows or Linux/macOS)
 OS := $(shell uname 2>/dev/null || echo Windows)
 
-.PHONY: openlane_gen clean openlane_push assemble build_bitstream
+.PHONY: openlane_gen clean openlane_push assemble build_bitstream bitstream_upload
 
 # Prepare output directory
 prepare:
@@ -74,7 +75,6 @@ else
 	fi
 endif
 
-
 # Clean OpenLane directory
 openlane_clean:
 ifeq ($(OS), Windows)
@@ -92,7 +92,8 @@ endif
 assemble:
 ifeq ($(OS), Windows)
 	@if not defined NAME ( \
-		echo [ERROR]: Please specify NAME=<firmware_name> (in firmware directory) & exit /b 1 \
+		echo [ERROR]: Please specify NAME="firmware_name" (in firmware directory) & \
+		exit /b 1 \
 	)
 	@if exist "$(FIRMWARE_DIR)\$(NAME)" ( \
 		if exist "$(FIRMWARE_DIR)\$(NAME)\$(NAME).s" ( \
@@ -162,6 +163,25 @@ else
 		echo "[ERROR]: File $(MAIN_HEX) not found."; \
 		exit 1; \
 	fi
+endif
+
+# Upload bitstream to the device
+bitstream_upload: bitstream_build
+ifeq ($(OS), Windows)
+	@echo [INFO]: Checking COM port...
+	@if not defined COM ( \
+		echo [ERROR]: Please specify COM port with COM="port_num" & \
+		exit /b 1 \
+	)
+	@echo [INFO]: Uploading bitstream to device via COM$(COM)...
+	@python $(UPLOAD_SCRIPT) $(COM)
+else
+	@if [ -z "$(COM)" ]; then \
+		echo "[ERROR]: Please specify COM port with COM=<port_number>"; \
+		exit 1; \
+	fi
+	@echo "[INFO]: Uploading bitstream to device via COM$(COM)..."
+	@python3 $(UPLOAD_SCRIPT) $(COM)
 endif
 
 # Clean bitstream files in programmer directory
