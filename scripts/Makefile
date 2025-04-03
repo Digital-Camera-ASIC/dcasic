@@ -4,7 +4,7 @@ OPENLANE_DESIGN_DIR ?= ../../test_env/OpenLane/designs/dcasic
 OPENLANE_SETUP_DIR := $(OUTPUT_DIR)/openlane
 RTL_LIST := rtl.f
 SRC_DIR := $(OPENLANE_SETUP_DIR)/src
-PYTHON_SCRIPT := openlane_script/openlane_gen.py
+OPENLANE_SCRIPT := openlane_script/openlane_gen.py
 ASSEMBLER_SCRIPT := assembler_script/assembler.py
 FIRMWARE_DIR := ../firmware
 BITSTREAM_SCRIPT := programmer_script/build.py
@@ -16,7 +16,7 @@ BITSTREAM_OUTPUT := $(OUTPUT_DIR)/programmer/bitstream.hex
 # Detect OS (Windows or Linux/macOS)
 OS := $(shell uname 2>/dev/null || echo Windows)
 
-.PHONY: openlane_gen clean openlane_push assemble build_bitstream bitstream_upload
+.PHONY: clean openlane_gen build_bitstream
 
 # Prepare output directory
 prepare:
@@ -45,11 +45,11 @@ openlane_gen: prepare
 ifeq ($(OS), Windows)
 	@if not exist "$(OPENLANE_SETUP_DIR)" mkdir "$(OPENLANE_SETUP_DIR)"
 	@if not exist "$(SRC_DIR)" mkdir "$(SRC_DIR)"
-	@python $(PYTHON_SCRIPT) "$(RTL_LIST)" "$(SRC_DIR)"
+	@python $(OPENLANE_SCRIPT) "$(RTL_LIST)" "$(SRC_DIR)"
 	@echo [INFO]: OpenLane environment files generated in $(OPENLANE_SETUP_DIR)
 else
 	@mkdir -p $(SRC_DIR)
-	@python3 $(PYTHON_SCRIPT) $(RTL_LIST) $(SRC_DIR)
+	@python3 $(OPENLANE_SCRIPT) $(RTL_LIST) $(SRC_DIR)
 	@echo "[INFO]: OpenLane source files generated in $(SRC_DIR)"
 endif
 
@@ -92,19 +92,19 @@ endif
 assemble:
 ifeq ($(OS), Windows)
 	@if not defined NAME ( \
-		echo [ERROR]: Please specify NAME="firmware_name" (in firmware directory) & \
+		echo [ERROR]: Please specify NAME="name_in_firmware_dir" - Example: "make assemble NAME=bootloader" & \
 		exit /b 1 \
 	)
 	@if exist "$(FIRMWARE_DIR)\$(NAME)" ( \
 		if exist "$(FIRMWARE_DIR)\$(NAME)\$(NAME).s" ( \
-			echo [INFO]: Assembling $(FIRMWARE_DIR)\$(NAME)\$(NAME).s with header $(FIRMWARE_DIR)\$(NAME)\$(NAME).hex & \
 			python $(ASSEMBLER_SCRIPT) "$(FIRMWARE_DIR)\$(NAME)\$(NAME).s" "$(FIRMWARE_DIR)\$(NAME)\$(NAME).hex" & \
+			echo [INFO]: Assembling $(FIRMWARE_DIR)/$(NAME)/$(NAME).s with output at $(FIRMWARE_DIR)/$(NAME)/$(NAME).hex & \
 			echo [INFO]: Assembly complete. \
 		) else ( \
-			echo [ERROR]: File $(FIRMWARE_DIR)\$(NAME)\$(NAME).s not found. & exit /b 1 \
+			echo [ERROR]: File $(FIRMWARE_DIR)/$(NAME)/$(NAME).s not found. & exit /b 1 \
 		) \
 	) else ( \
-		echo [ERROR]: Firmware directory $(FIRMWARE_DIR)\$(NAME) not found. & exit /b 1 \
+		echo [ERROR]: Firmware directory $(FIRMWARE_DIR)/$(NAME) not found. & exit /b 1 \
 	)
 else
 	@if [ -z "$(NAME)" ]; then \
@@ -141,7 +141,7 @@ ifeq ($(OS), Windows)
 			if not exist "output/programmer" mkdir "output/programmer" & \
 			echo [INFO]: Building bitstream with main.hex and isr.hex & \
 			python $(BITSTREAM_SCRIPT) "$(BITSTREAM_OUTPUT)" "$(MAIN_HEX)" "$(ISR_HEX)" & \
-			echo [INFO]: Bitstream build complete. \
+			echo [INFO]: Bitstream build completely with output $(BITSTREAM_OUTPUT) \
 		) else ( \
 			echo [ERROR]: File $(ISR_HEX) not found. & exit /b 1 \
 		) \
@@ -170,7 +170,7 @@ bitstream_upload: bitstream_build
 ifeq ($(OS), Windows)
 	@echo [INFO]: Checking COM port...
 	@if not defined COM ( \
-		echo [ERROR]: Please specify COM port with COM="port_num" & \
+		echo [ERROR]: Please specify COM port with COM="port_num" - Example: "make bitstream_upload COM=3" & \
 		exit /b 1 \
 	)
 	@echo [INFO]: Uploading bitstream to device via COM$(COM)...
