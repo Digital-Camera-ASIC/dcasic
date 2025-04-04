@@ -20,7 +20,7 @@ def load_bitstream(file_path, serial_port, baudrate=9600):
             # Send each byte over UART with progress tracking
             for index, byte in enumerate(data, start=1):
                 ser.write(bytes([byte]))
-                time.sleep(0.01)  # Small delay to ensure correct transmission
+                time.sleep(0.0001)  # Small delay to ensure correct transmission
                 
                 # Monitor progress every 1s
                 if time.time() - last_print_time >= 1:
