@@ -1,5 +1,5 @@
 `define IMAGE_PROCESSOR_ENABLE
-// `define SILICON_DEBUG
+`define SILICON_DEBUG
 module dcasic #(
     parameter INTERNAL_CLK      = 50_000_000,
     // DVP Interface
@@ -8,7 +8,7 @@ module dcasic #(
     parameter DBI_IF_D_W        = 8,
     // Instruction Memory
     parameter IMEM_W            = 9,    // 512 instructions
-    parameter BOOTLOADER_FILE   = "../firmware/bootloader/program_0.hex", // Bootloader file of the system
+    parameter BOOTLOADER_FILE   = "C:/Users/datph/Desktop/Thesis/dcasic2/dcasic/firmware/bootloader/program_0.hex", // Bootloader file of the system
     // Image
     // -- Input frame (From the Camera)
     parameter I_FRM_COL_NUM     = 640,  // Input frame from camera: Number of columns
@@ -45,16 +45,9 @@ module dcasic #(
 
 `ifdef SILICON_DEBUG
     ,output                     debug_0
-    ,output                     dvp_href_2
-    ,output                     dvp_vsync_2
-    ,output                     dvp_pclk_2
-    ,output                     dvp_xclk_2
-    ,output                     dvp_d_i_0
-    ,output                     dvp_d_i_1
 `endif
 
 );
-
     // ========================================================================================
     // ================================== Configuration BUS ===================================
     // ========================================================================================
@@ -840,8 +833,14 @@ module dcasic #(
         .o_valid                (),
         .is_person              (),
         .sw_id                  (),
-        .led                    ()
+        .led                    (debug_0)
     );
+	 // INIT COEFICIENT
+	 //initial begin
+	   //$readmemh("C:/Users/datph/Desktop/Thesis/Hog human detection/HOG-human-detection/coefficients_fixed_point.txt", iproc.hs.u_svm.u_dp_ram2.ram);
+	 //end
+	 
+	 // END INIT
 `else
     assign dbus_tready_slv[IP_TREADY_IDX] = ~|(dbus_tdest^IP_TDEST_MSK); // Ready is asserted when the IP is mapped
 `endif
@@ -920,12 +919,12 @@ module dcasic #(
         end
     endgenerate
 `ifdef SILICON_DEBUG
-    assign debug_0 = 1'b1;
-    assign dvp_href_2   = dvp_href_i;
-    assign dvp_vsync_2  = dvp_vsync_i;
-    assign dvp_pclk_2   = dvp_pclk_i;
-    assign dvp_xclk_2   = dvp_xclk_o;
-    assign dvp_d_i_0    = dvp_d_i[0];
-    assign dvp_d_i_1    = dvp_d_i[1];
+//    assign debug_0 = 1'b1;
+//    assign dvp_href_2   = dvp_href_i;
+//    assign dvp_vsync_2  = dvp_vsync_i;
+//    assign dvp_pclk_2   = dvp_pclk_i;
+//    assign dvp_xclk_2   = dvp_xclk_o;
+//    assign dvp_d_i_0    = dvp_d_i[0];
+//    assign dvp_d_i_1    = dvp_d_i[1];
 `endif
 endmodule
