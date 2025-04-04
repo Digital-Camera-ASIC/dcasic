@@ -91,6 +91,7 @@
         "dir::src/svm_ctrl.v",
         "dir::src/svm_pe.v",
         "dir::src/svm.v",
+        "dir::src/left_shift_msb.v",
         "dir::src/axi4_ctrl.v",
         "dir::src/arb_prior_granter.v",
         "dir::src/arb_round_comp_detector.v",

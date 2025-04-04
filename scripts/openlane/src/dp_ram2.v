@@ -15,12 +15,7 @@ module dp_ram2 #(
 );
   localparam MEM_S = 2 ** ADDR_W;
   reg [DATA_W - 1 : 0] ram [MEM_S - 1 : 0];
-	 // INIT COEFICIENT
-	 initial begin
-	   $readmemh("C:/Users/datph/Desktop/Thesis/Hog human detection/HOG-human-detection/coefficients_fixed_point.txt", ram);
-	 end
-	 
-	 // END INIT
+
   // input port
   always @(posedge clk) begin 
     if (write_en) begin
