@@ -97,6 +97,7 @@
 ./../ip/image_proc/axi_hog_svm/HOG_SVM_FPGA/hdl/svm_ctrl.v
 ./../ip/image_proc/axi_hog_svm/HOG_SVM_FPGA/hdl/svm_pe.v
 ./../ip/image_proc/axi_hog_svm/HOG_SVM_FPGA/hdl/svm.v
+./../ip/image_proc/axi_hog_svm/HOG_SVM_FPGA/hdl/left_shift_msb.v
 # Common
 ./../rtl/common/adapter/axi/axi4_ctrl.v
 ./../rtl/common/arbiter/iwrr/arb_prior_granter.v
