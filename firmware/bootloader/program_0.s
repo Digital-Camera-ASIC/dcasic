@@ -24,7 +24,7 @@
 FLAG0:
     addi x8, x8, -0x01
     bne x8, x0, FLAG0
-# 4. COM7
+# 4. COM7 (***Same***)
     addi x4, x0, 0x12
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
     addi x4, x0, 0b00000100
@@ -38,7 +38,7 @@ FLAG0:
     sb x4, 0(x7)        # Add write data of a SCCB transmission (0xC0)
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# 6. COM15
+# 6. COM15 (***Same***)
     addi x4, x0, 0x40
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x40)
     addi x4, x0, 0b11010000
@@ -48,7 +48,14 @@ FLAG0:
 # 7. COM13 (0x3D)
     addi x4, x0, 0x3D
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x3D)
-    addi x4, x0, 0x81
+    addi x4, x0, 0x00
+    sb x4, 0(x7)        # Add write data of a SCCB transmission (0x81)
+    addi x4, x0, 0b00000111
+    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# 7. COM14 (0x3E)
+    addi x4, x0, 0x3E
+    sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x3D)
+    addi x4, x0, 0x00
     sb x4, 0(x7)        # Add write data of a SCCB transmission (0x81)
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
@@ -73,34 +80,34 @@ FLAG0:
 #     sb x4, 0(x7)        # Add write data of a SCCB transmission (0x0B)
 #     addi x4, x0, 0b00000111
 #     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# 11. COM8 -> Enable AGC / AEC
-    addi x4, x0, 0x13
+# 11. COM8 -> Enable AGC / AEC  --- New config (enable AWB)
+    addi x4, x0, 0x13   
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
-    addi x4, x0, 0xe5
+    addi x4, x0, 0x00   # Dat change previous e7
     sb x4, 0(x7)        # Add write data of a SCCB transmission
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
 # 12. NALG -> Select Histogram-based AEC algorithm
-    addi x4, x0, 0xAA
-    sb x4, 0(x6)        # Add sub-address of a SCCB transmission
-    addi x4, x0, 0x94
-    sb x4, 0(x7)        # Add write data of a SCCB transmission
-    addi x4, x0, 0b00000111
-    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+#    addi x4, x0, 0xAA
+#    sb x4, 0(x6)        # Add sub-address of a SCCB transmission
+#    addi x4, x0, 0x14
+#    sb x4, 0(x7)        # Add write data of a SCCB transmission
+#    addi x4, x0, 0b00000111
+#    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
 # # 13. GAIN -> Set gain reg to 0 for AGC
-#     addi x4, x0, 0x00
-#     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
-#     addi x4, x0, 0x00
-#     sb x4, 0(x7)        # Add write data of a SCCB transmission
-#     addi x4, x0, 0b00000111
-#     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+     addi x4, x0, 0x00
+     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
+     addi x4, x0, 0x60
+     sb x4, 0(x7)        # Add write data of a SCCB transmission
+     addi x4, x0, 0b00000111
+     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
 # # 14. AECH
-#     addi x4, x0, 0x10
-#     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
-#     addi x4, x0, 0x00
-#     sb x4, 0(x7)        # Add write data of a SCCB transmission
-#     addi x4, x0, 0b00000111
-#     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+     addi x4, x0, 0x10
+     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
+     addi x4, x0, 0xA0
+     sb x4, 0(x7)        # Add write data of a SCCB transmission
+     addi x4, x0, 0b00000111
+     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
 # # 15. Magic configuration (from a recommandation on Github)
 #     addi x4, x0, 0x0D
 #     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
@@ -108,10 +115,10 @@ FLAG0:
 #     sb x4, 0(x7)        # Add write data of a SCCB transmission
 #     addi x4, x0, 0b00000111
 #     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# 16. COM9 -> 4x gain AEC
+# 16. COM9 -> 16x gain AEC (New configuration)
     addi x4, x0, 0x14
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
-    addi x4, x0, 0x18
+    addi x4, x0, 0x00
     sb x4, 0(x7)        # Add write data of a SCCB transmission
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
@@ -132,10 +139,73 @@ FLAG0:
 # # 19. COM11 -> Set [1] to reduce light effect
 #     addi x4, x0, 0x3B
 #     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
-#     addi x4, x0, 0x02
+#     addi x4, x0, 0x00
 #     sb x4, 0(x7)        # Add write data of a SCCB transmission
 #     addi x4, x0, 0b00000111
 #     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# # 20. COM1 
+     addi x4, x0, 0x04
+     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
+     addi x4, x0, 0x00
+     sb x4, 0(x7)        # Add write data of a SCCB transmission
+     addi x4, x0, 0b00000111
+     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# # 21. Matrix coef 1
+    addi x4, x0, 0x4F
+    sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
+    addi x4, x0, 0xB3
+    sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
+    addi x4, x0, 0b00000111
+    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# # 22. Matrix coef 2
+    addi x4, x0, 0x50
+    sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
+    addi x4, x0, 0xB3
+    sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
+    addi x4, x0, 0b00000111
+    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# # 23. Matrix coef 3
+    addi x4, x0, 0x51
+    sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
+    addi x4, x0, 0x00
+    sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
+    addi x4, x0, 0b00000111
+    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# # 24. Matrix coef 4
+    addi x4, x0, 0x52
+    sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
+    addi x4, x0, 0x3D
+    sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
+    addi x4, x0, 0b00000111
+    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# # 25. Matrix coef 5
+    addi x4, x0, 0x53
+    sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
+    addi x4, x0, 0xA7
+    sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
+    addi x4, x0, 0b00000111
+    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# # 26. Matrix coef 6
+    addi x4, x0, 0x54
+    sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
+    addi x4, x0, 0xE4
+    sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
+    addi x4, x0, 0b00000111
+    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# # 27. 0x55 -- BRIGHTNESS
+    addi x4, x0, 0x55
+    sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
+    addi x4, x0, 0x10
+    sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
+    addi x4, x0, 0b00000111
+    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# # 27. 0x56 -- CONTRAST
+    addi x4, x0, 0x56
+    sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
+    addi x4, x0, 0x50
+    sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
+    addi x4, x0, 0b00000111
+    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
 
 # 11. Wait for all SCCB transactions to send
 FLAG_1:
