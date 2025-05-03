@@ -1,4 +1,4 @@
 env/
 sim/
 quartus/
-tb/
+scripts/output

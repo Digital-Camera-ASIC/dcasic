@@ -3,14 +3,14 @@ import shutil
 import json
 
 # Define paths
-OPENLANE_DIR = "openlane"
+OPENLANE_DIR = "output/openlane"
 SRC_DIR = os.path.join(OPENLANE_DIR, "src")
 RTL_FILE = "rtl.f"
 SDC_SOURCE = "../rtl/dcasic.sdc"
 SDC_DEST = os.path.join(SRC_DIR, "dcasic.sdc")
-PIN_ORDER_SOURCE = "openlane_pin_order.cfg"
+PIN_ORDER_SOURCE = "openlane_script/openlane_pin_order.cfg"
 PIN_ORDER_DEST = os.path.join(OPENLANE_DIR, "pin_order.cfg")
-CONFIG_TEMPLATE = "openlane_config.json"
+CONFIG_TEMPLATE = "openlane_script/openlane_config.json"
 CONFIG_OUTPUT = os.path.join(OPENLANE_DIR, "config.json")
 
 # Remove the existing src directory if it exists
@@ -64,6 +64,7 @@ new_config = {
     "CLOCK_NET": "sys_clk",
     "FP_CORE_UTIL": 70,
     "CLOCK_PERIOD": 20,
+    "PNR_SDC_FILE": "dir::src/dcasic.sdc",
     "BASE_SDC_FILE": f"dir::src/dcasic.sdc" if os.path.exists(SDC_DEST) else ""
 }
 
