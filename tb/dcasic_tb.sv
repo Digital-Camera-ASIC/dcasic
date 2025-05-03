@@ -1,11 +1,16 @@
 `timescale 1ns/1ps
 
+`define BOOTLOADER_PATH "../firmware/bootloader/bootloader.hex"
+`define BITSTREAM_PATH  "../scripts/output/programmer/bitstream.hex"
+`define IMG_I_PATH      "../sim/dut_env/dut_input/img_txt.txt"
+`define IMG_O_PATH      "../sim/dut_env/dut_output/img_txt.txt"
+ 
 `define DUT_CLK_PERIOD  2
 `define DVP_CLK_PERIOD  12
 `define RST_DLY_START   3
 `define RST_DUR         9
 
-`define END_TIME        6700000
+`define END_TIME        370000000
 
 // DVP Physical characteristic
 // -- t_PDV = 5 ns = (5/INTERNAL_CLK_PERIOD)*DUT_CLK_PERIOD = (5/8)*2
@@ -15,11 +20,12 @@
 `define SCCB_DVC_LATENCY 2 // Time unit
 
 module dcasic_tb;
+    parameter INTERNAL_CLK      = 50_000_000;
     parameter DVP_DATA_W        = 8;
     parameter DBI_IF_D_W        = 8;
 
     logic                       sys_clk;
-    logic                       sys_trap_o;
+    logic                       sys_trap;
     logic                       rst_n;
     // Camera RX Interface
     logic   [DVP_DATA_W-1:0]    dvp_d_i;
@@ -39,11 +45,23 @@ module dcasic_tb;
     // Camera Controller Interface
     logic                       sio_c;
     wire                        sio_d;
+    // UART interface
+    logic                       rx;
+    logic                       tx;
+
 
     logic                       debug_0;
 
+    // Driver
+    logic                       tx_drv = 1'b1;
+    logic                       rx_drv;
+
+    assign rx       = tx_drv;
+    assign rx_drv   = tx;
+
     dcasic #(
-        .BOOTLOADER_FILE("../firmware/test/sim_0.hex")
+        .BOOTLOADER_FILE(`BOOTLOADER_PATH),
+        .INTERNAL_CLK   (INTERNAL_CLK)
     ) dut (
         .*
     );
@@ -93,14 +111,215 @@ module dcasic_tb;
     endtask
 
 
+    /* ------------------------------ UART Controller ------------------------------ */
+    reg [7:0]   uart_pck    [0:8192-1];
+    int         uart_pck_cnt = 0;
+    initial begin : UART_SEQ
+        int file;
+        string line;
+        int fd;
+        fd = $fopen(`BITSTREAM_PATH, "r");
+        if (fd) begin
+            $display("[INFO]: Read bitstream file successfully");
+        end
+        else begin
+            $display("[ERROR]: Bitstream file does not exist at path: %s", `BITSTREAM_PATH);
+            $finish;
+        end
+        $fclose(fd);
+        file = $fopen(`BITSTREAM_PATH, "r");  // Mở file để đọc
+        if (file) begin
+            while (!$feof(file)) begin
+                uart_pck_cnt = uart_pck_cnt + 1;
+                void'($fgets(line, file));  // Đọc từng dòng để đếm
+            end
+            $fclose(file);
+        end
+
+        $readmemh(`BITSTREAM_PATH, uart_pck);  // Load dữ liệu
+        $display("[INFO]: Total %0d bytes in the bitstream file", uart_pck_cnt);
+    end
+    
+    initial begin : UART_DRV
+        int i;
+
+        repeat(200) aclk_cl;
+        
+        $display("[INFO]: Programming DCASIC ....");
+        for(i = 0; i < uart_pck_cnt; i = i + 1) begin
+            uart_tx(.tx_data(uart_pck[i]), .tx_baud(9600));
+            $display("[INFO]: Programming DCASIC .... (%0f%%)", ((i*1.0) / uart_pck_cnt)*100);
+        end
+        $display("[INFO]: Programming done");
+    end
+
+    initial begin : UART_MONITOR
+        logic [7:0] rx_data;
+        logic       rx_error;
+        #(`RST_DLY_START + `RST_DUR + 1);
+
+        forever begin
+            uart_rx(.rx_data(rx_data), .rx_error(rx_error), .rx_baud(9600));
+            $display("[INFO]: UART RX driver receive 0x%2h", rx_data);
+        end
+    end
+
+    task automatic uart_tx (
+        input [7:0] tx_data,
+        input int   tx_baud
+    );
+        localparam TXN_IDLE_ST      = 0;
+        localparam TXN_START_BIT_ST = 1;
+        localparam TXN_DATA_BIT_ST  = 2;
+        localparam TXN_STOP_BIT_ST  = 3;
+        int txn_st = TXN_IDLE_ST;
+        int data_cnt = 0;
+        int baud_cnt = (INTERNAL_CLK / tx_baud) - 1;
+        while (1'b1) begin
+            aclk_cl;
+            case(txn_st)
+                TXN_IDLE_ST: begin
+                    tx_drv = 1'b0;
+                    txn_st = TXN_START_BIT_ST;
+                    data_cnt = 0;
+                    baud_cnt = (INTERNAL_CLK / tx_baud) - 1;
+                end
+                TXN_START_BIT_ST: begin
+                    baud_cnt = baud_cnt - 1;
+                    if(baud_cnt == -1) begin
+                        tx_drv = tx_data[data_cnt];
+                        txn_st = TXN_DATA_BIT_ST;
+                        data_cnt = data_cnt + 1'b1;
+                        baud_cnt = (INTERNAL_CLK / tx_baud) - 1;
+                    end
+                end
+                TXN_DATA_BIT_ST: begin
+                    baud_cnt = baud_cnt - 1;
+                    if(baud_cnt == -1) begin
+                        if(data_cnt == 8) begin
+                            tx_drv = 1'b1;
+                            txn_st = TXN_STOP_BIT_ST;
+                            data_cnt = 0;
+                            baud_cnt = (INTERNAL_CLK / tx_baud) - 1;
+                        end
+                        else begin
+                            tx_drv = tx_data[data_cnt];
+                            data_cnt = data_cnt + 1'b1;
+                            baud_cnt = (INTERNAL_CLK / tx_baud) - 1;
+                        end
+                    end
+                end
+                TXN_STOP_BIT_ST: begin
+                    baud_cnt = baud_cnt - 1;
+                    if(baud_cnt == -1) begin
+                        tx_drv = 1'b1;
+                        txn_st = TXN_IDLE_ST;
+                        data_cnt = 0;
+                        baud_cnt = (INTERNAL_CLK / tx_baud) - 1;
+                        break;
+                    end
+                end
+            endcase
+        end
+    endtask
+    
+    task automatic uart_rx (
+        output [7:0]    rx_data,
+        output          rx_error,
+        input  int      rx_baud
+    );
+        localparam TXN_IDLE_ST      = 0;
+        localparam TXN_START_BIT_ST = 1;
+        localparam TXN_DATA_BIT_ST  = 2;
+        localparam TXN_STOP_BIT_ST  = 3;
+        int txn_st = TXN_IDLE_ST;
+        int baud_cnt = (INTERNAL_CLK / rx_baud) / 2; // 1/2 baudrate cycle to shift 1/2 phase
+        int data_cnt = 0;
+        // rx_drv
+        while (1'b1) begin
+            aclk_cl;
+            case(txn_st)
+                TXN_IDLE_ST: begin
+                    if(rx_drv == 1'b0) begin
+                        baud_cnt = baud_cnt - 1;
+                        if(baud_cnt == -1) begin // To shift 1/2 phase
+                            txn_st   = TXN_START_BIT_ST;
+                            data_cnt = 0;
+                            baud_cnt = (INTERNAL_CLK / rx_baud) - 1;
+                        end    
+                    end
+                end
+                TXN_START_BIT_ST: begin
+                    baud_cnt = baud_cnt - 1;
+                    if(baud_cnt == -1) begin
+                        txn_st   = TXN_DATA_BIT_ST;
+                        rx_data[data_cnt] = rx_drv;
+                        data_cnt = data_cnt + 1;
+                        baud_cnt = (INTERNAL_CLK / rx_baud) - 1;
+                    end    
+                end
+                TXN_DATA_BIT_ST: begin
+                    baud_cnt = baud_cnt - 1;
+                    if(baud_cnt == -1) begin
+                        if(data_cnt == 8) begin
+                            txn_st   = TXN_STOP_BIT_ST;
+                            rx_error = (rx_drv == 1'b0);
+                            data_cnt = 0;
+                            baud_cnt = (INTERNAL_CLK / rx_baud) / 2; // Recovery the shifted phase
+                        end
+                        else begin
+                            rx_data[data_cnt] = rx_drv;
+                            data_cnt = data_cnt + 1;
+                            baud_cnt = (INTERNAL_CLK / rx_baud) - 1;
+                        end
+                    end    
+                end
+                TXN_STOP_BIT_ST: begin
+                    baud_cnt = baud_cnt - 1;
+                    if(baud_cnt == -1) begin
+                        txn_st = TXN_IDLE_ST;
+                        data_cnt = 0;
+                        baud_cnt = (INTERNAL_CLK / rx_baud) / 2;
+                        break;
+                    end
+                end
+            endcase
+        end
+    endtask
+    /* ------------------------------ UART Controller ------------------------------ */
+    
     /* ------------------------------ DVP RX Controller ------------------------------ */
     int pclk_cnt    = 0;
     int dvp_st      = 0;
     int tx_cnt      = 0;
     reg [15:0] input_img [0:640*480-1];
 
-    initial begin
-        $readmemh("../sim/dut_env/dut_input/img_txt.txt", input_img);
+    initial begin : DVP_SEQ
+        int fd;
+        fd = $fopen (`IMG_I_PATH, "r");
+        if (fd) begin
+            $display("[INFO]: Read input image successfully");
+        end
+        else begin     
+            $display("[ERROR]: Input image file does not exist at path: %s", `IMG_I_PATH);
+            $finish;
+        end
+        $fclose(fd);
+        $readmemh(`IMG_I_PATH, input_img);
+    end
+
+    initial begin : DVP_MONITOR
+        int i;
+        while (1'b1) begin
+            wait(dvp_vsync_i === 1'b1); #1;
+            wait(dvp_vsync_i === 1'b0); #1;
+            for(i = 0; i < 480; i = i + 1) begin
+                #1; 
+                @(posedge dvp_href_i); #1;        
+                $display("[INFO]: The DVP sends 1 row (%dth) at time %d", (tx_cnt/(640*2)), $time);
+            end
+            $display("[INFO]: One frame was sent completely via DVP");
+        end
     end
 
     task automatic pclk_cl;
@@ -250,11 +469,10 @@ end
                 end
                 else begin  // Others case 
                     if(dbi_dcx_o == 1'b0) begin // Command
-                        $display("------------ DBI new info ------------");
-                        $display("DBI Command:  0x%2h", dbi_d_o);
+                        $display("[INFO]: DBI Command:  0x%2h", dbi_d_o);
                     end
                     else begin  // Data 
-                        $display("DBI Data:     0x%2h", dbi_d_o);
+                        $display("[INFO]: DBI Data:     0x%2h", dbi_d_o);
                     end
                 end
             end
@@ -269,7 +487,7 @@ end
                 if(dbi_d_cnt == 320*240*2 - 1) begin    // Output image size is 320x240 (2 data/pixel)
                     dbi_img_rc_st <= DBI_IMG_IDLE;
                     dbi_d_cnt <= 0;
-                    #1; $writememh("../sim/dut_env/dut_output/img_txt.txt", output_img);
+                    #1; $writememh(`IMG_O_PATH, output_img);
                 end
             end
         endcase
@@ -365,21 +583,23 @@ end
                     tx_data[2]  <= 8'h00;   // Reset DATA buffer
                 end
                 else begin
-                    $display("------------ Slave new info ------------");
+                    // $display("------------ Slave new info ------------");
                     if(~tx_data[0][0]) begin// Write transmission
-                        $display("Completed 1 write transmission");
-                        $display("Number of phases:     %2d", phase_cnt);
-                        $display("SLAVE DEVICE ADDRESS: %2h", tx_data[0]);
-                        $display("SUB-ADDRESS:          %2h", tx_data[1]);
-                        $display("WRITE DATA:           %2h", tx_data[2]);
+                        $display("[INFO]: SCCB write transaction with (SLV_ADDR - SUB_ADDR - DATA) (%2h - %2h - %2h)", tx_data[0], tx_data[1], tx_data[2]);
+                        // $display("Completed 1 write transmission");
+                        // $display("Number of phases:     %2d", phase_cnt);
+                        // $display("SLAVE DEVICE ADDRESS: %2h", tx_data[0]);
+                        // $display("SUB-ADDRESS:          %2h", tx_data[1]);
+                        // $display("WRITE DATA:           %2h", tx_data[2]);
                     end
                     else begin              // Read transmission
-                        $display("Completed 1 read transmission");
-                        $display("Number of phases:     %2d", phase_cnt);
-                        $display("SLAVE DEVICE ADDRESS: %2h", tx_data[0]);
-                        $display("READ DATA:            %2h", tx_data[1]);
+                        $display("[INFO]: SCCB write transaction with (SLV_ADDR - DATA) (%2h - %2h)", tx_data[0], tx_data[1]);
+                        // $display("Completed 1 read transmission");
+                        // $display("Number of phases:     %2d", phase_cnt);
+                        // $display("SLAVE DEVICE ADDRESS: %2h", tx_data[0]);
+                        // $display("READ DATA:            %2h", tx_data[1]);
                     end
-                    $display("----------------------------------------");
+                    // $display("----------------------------------------");
                     // Reset the state and buffer in slv
                     start_tx_flg = 1;
                     sccb_slv_st      <= SCCB_IDLE_ST;

@@ -1,14 +1,25 @@
-
+MAIN_PROG:
+#####################################################
+######### Set up the Interrupt Environment ##########
+#####################################################
+#   x4: temporary value
+#   x5: temporary value
+    addi x4, x0, 0xff0  # Use 4 interrupt sources
+    maskirq x5, x4      # Set the interrupt mask
 #####################################################
 ####### Configure the SCCB Master Controller ########
 #####################################################
+#   x4: temporary value
+#   x5: store the CONTROL_BUF address:      0x6000_0010 
+#   x6: store the SUB_ADDR_BUF address:     0x6000_0011
+#   x7: store the WRITE_DATA_BUF address:   0x6000_0012
 # 0. Configure SLV_DVC_ADDR register with value 0x23
     lui x5, 0x60000
     addi x5, x5, 0x00
     addi x4, x0, 0x23
     sb x4, 0(x5)
 # 1. Setup address value
-    lui x5,0x60000      
+    lui x5, 0x60000      
     addi x5, x5, 0x10   # x5: 0x6000_0010 (CONTROL_BUF address)
     addi x6, x5, 0x01   # x6: 0x6000_0011 (SUB_ADDR_BUF address)
     addi x7, x5, 0x02   # x7: 0x6000_0012 (WRITE_DATA_BUF address)
@@ -94,20 +105,20 @@ FLAG0:
 #    sb x4, 0(x7)        # Add write data of a SCCB transmission
 #    addi x4, x0, 0b00000111
 #    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# # 13. GAIN -> Set gain reg to 0 for AGC
-     addi x4, x0, 0x00
-     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
-     addi x4, x0, 0x60
-     sb x4, 0(x7)        # Add write data of a SCCB transmission
-     addi x4, x0, 0b00000111
-     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# # 14. AECH
-     addi x4, x0, 0x10
-     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
-     addi x4, x0, 0xA0
-     sb x4, 0(x7)        # Add write data of a SCCB transmission
-     addi x4, x0, 0b00000111
-     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# 13. GAIN -> Set gain reg to 0 for AGC
+    addi x4, x0, 0x00
+    sb x4, 0(x6)        # Add sub-address of a SCCB transmission
+    addi x4, x0, 0x60
+    sb x4, 0(x7)        # Add write data of a SCCB transmission
+    addi x4, x0, 0b00000111
+    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
+# 14. AECH
+    addi x4, x0, 0x10
+    sb x4, 0(x6)        # Add sub-address of a SCCB transmission
+    addi x4, x0, 0xA0
+    sb x4, 0(x7)        # Add write data of a SCCB transmission
+    addi x4, x0, 0b00000111
+    sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
 # # 15. Magic configuration (from a recommandation on Github)
 #     addi x4, x0, 0x0D
 #     sb x4, 0(x6)        # Add sub-address of a SCCB transmission
@@ -143,70 +154,69 @@ FLAG0:
 #     sb x4, 0(x7)        # Add write data of a SCCB transmission
 #     addi x4, x0, 0b00000111
 #     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# # 20. COM1 
+# 20. COM1 
      addi x4, x0, 0x04
      sb x4, 0(x6)        # Add sub-address of a SCCB transmission
      addi x4, x0, 0x00
      sb x4, 0(x7)        # Add write data of a SCCB transmission
      addi x4, x0, 0b00000111
      sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# # 21. Matrix coef 1
+# 21. Matrix coef 1
     addi x4, x0, 0x4F
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
     addi x4, x0, 0xB3
     sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# # 22. Matrix coef 2
+# 22. Matrix coef 2
     addi x4, x0, 0x50
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
     addi x4, x0, 0xB3
     sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# # 23. Matrix coef 3
+# 23. Matrix coef 3
     addi x4, x0, 0x51
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
     addi x4, x0, 0x00
     sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# # 24. Matrix coef 4
+# 24. Matrix coef 4
     addi x4, x0, 0x52
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
     addi x4, x0, 0x3D
     sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# # 25. Matrix coef 5
+# 25. Matrix coef 5
     addi x4, x0, 0x53
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
     addi x4, x0, 0xA7
     sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# # 26. Matrix coef 6
+# 26. Matrix coef 6
     addi x4, x0, 0x54
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
     addi x4, x0, 0xE4
     sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# # 27. 0x55 -- BRIGHTNESS
+# 27. 0x55 -- BRIGHTNESS
     addi x4, x0, 0x55
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
     addi x4, x0, 0x10
     sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-# # 27. 0x56 -- CONTRAST
+# 27. 0x56 -- CONTRAST
     addi x4, x0, 0x56
     sb x4, 0(x6)        # Add sub-address of a SCCB transmission (0x12)
     addi x4, x0, 0x50
     sb x4, 0(x7)        # Add write data of a SCCB transmission (0x04)
     addi x4, x0, 0b00000111
     sb x4, 0(x5)        # Start a SCCB Master Controller with a 3-phase write transmission
-
 # 11. Wait for all SCCB transactions to send
 FLAG_1:
     lb x4, 0(x5)
@@ -363,7 +373,7 @@ FLAG_5:
     sw x4, 0(x6)
 # CHN_IRQ_MASK register
     addi x6, x5, 0x03 # Reg address: 0x5000_0003
-    addi x4, x0, 0b00000011 # Enable transfer-completed & transfer-queued interrupt
+    addi x4, x0, 0b00000001 # Enable transfer-completed
     sw x4, 0(x6)
 # CHN_ARBIT register
     addi x6, x5, 0x04 # Reg address: 0x5000_0004
@@ -435,11 +445,11 @@ FLAG_5:
     sw x4, 0(x5)
 # CHN_FLAGS[0] register
     addi x5, x7, 0x02   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x03   # Enable 2D transfer & cyclic transfer mode
+    addi x4, x0, 0x01   # Enable 2D transfer mode
     sw x4, 0(x5)
 # CHN_IRQ_MASK[0] register
     addi x5, x7, 0x03   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x03   # Enable transfer-completed & transfer-queued interrupt
+    addi x4, x0, 0x01   # Enable transfer-completed
     sw x4, 0(x5)
 # CHN_ARBIT_RATE[0] register
     addi x5, x7, 0x04   # register_address = DMA_base_address + register_offset 
@@ -447,7 +457,7 @@ FLAG_5:
     sw x4, 0(x5)
 # ATX_ID[0] register
     addi x5, x7, 0x05   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x01   # Set ID of transaction's channel 0
+    addi x4, x0, 0x00   # Set ID of transaction's channel 0
     sw x4, 0(x5)
 # ATX_SRC_BURST[0] register
     addi x5, x7, 0x06   # register_address = DMA_base_address + register_offset 
@@ -478,25 +488,25 @@ FLAG_5:
     addi x5, x7, 0x0D   # register_address = DMA_base_address + register_offset 
     addi x4, x0, 10    
     sw x4, 0(x5) 
-# TRANSFER_SUBMIT[0] register
-    lui x5, 0x00001     # RW1S offset: 0x1000
-    add x5, x5, x7      # RW1S_base_address = CHN0_base_address + RW1S_offset  
-    addi x5, x5, 0x00   # register_address = RW1S_base_address + register_offset 
-    addi x4, x0, 0x01    
-    sw x4, 0(x5) 
+# # TRANSFER_SUBMIT[0] register
+#     lui x5, 0x00001     # RW1S offset: 0x1000
+#     add x5, x5, x7      # RW1S_base_address = CHN0_base_address + RW1S_offset  
+#     addi x5, x5, 0x00   # register_address = RW1S_base_address + register_offset 
+#     addi x4, x0, 0x01    
+#     sw x4, 0(x5) 
 
     
 # CHN_CONTROL[1] register
     addi x5, x8, 0x01   # register_address = CHN1_base_address + register_offset 
     addi x4, x0, 0x01   # Enable the Channel
     sw x4, 0(x5)
-# CHN_FLAGS[0] register
+# CHN_FLAGS[1] register
     addi x5, x8, 0x02   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x03   # Enable 2D transfer & cyclic transfer mode
+    addi x4, x0, 0x01   # Enable 2D transfer mode
     sw x4, 0(x5)
 # CHN_IRQ_MASK[1] register
     addi x5, x8, 0x03   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x03   # Enable transfer-completed & transfer-queued interrupt
+    addi x4, x0, 0x01   # Enable transfer-completed
     sw x4, 0(x5)
 # CHN_ARBIT_RATE[1] register
     addi x5, x8, 0x04   # register_address = DMA_base_address + register_offset 
@@ -504,7 +514,7 @@ FLAG_5:
     sw x4, 0(x5)
 # ATX_ID[1] register
     addi x5, x8, 0x05   # register_address = DMA_base_address + register_offset 
-    addi x4, x0, 0x02   # Set ID of transaction's channel 1
+    addi x4, x0, 0x01   # Set ID of transaction's channel 1
     sw x4, 0(x5)
 # ATX_SRC_BURST[1] register
     addi x5, x8, 0x06   # register_address = DMA_base_address + register_offset 
@@ -535,12 +545,12 @@ FLAG_5:
     addi x5, x8, 0x0D   # register_address = DMA_base_address + register_offset 
     addi x4, x0, 10    
     sw x4, 0(x5) 
-# TRANSFER_SUBMIT[1] register
-    lui x5, 0x00001     # RW1S offset: 0x1000
-    add x5, x5, x8      # RW1S_base_address = CHN1_base_address + RW1S_offset  
-    addi x5, x5, 0x00   # register_address = RW1S_base_address + register_offset 
-    addi x4, x0, 0x01    
-    sw x4, 0(x5) 
+# # TRANSFER_SUBMIT[1] register
+#     lui x5, 0x00001     # RW1S offset: 0x1000
+#     add x5, x5, x8      # RW1S_base_address = CHN1_base_address + RW1S_offset  
+#     addi x5, x5, 0x00   # register_address = RW1S_base_address + register_offset 
+#     addi x4, x0, 0x01    
+#     sw x4, 0(x5) 
     
 
 

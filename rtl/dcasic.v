@@ -1,5 +1,6 @@
 `define IMAGE_PROCESSOR_ENABLE
 `define SILICON_DEBUG
+// `define OPENLANE_DEBUG
 module dcasic #(
     parameter INTERNAL_CLK      = 50_000_000,
     // DVP Interface
@@ -7,8 +8,10 @@ module dcasic #(
     // DBI Interface
     parameter DBI_IF_D_W        = 8,
     // Instruction Memory
-    parameter IMEM_W            = 9,    // 512 instructions
-    parameter BOOTLOADER_FILE   = "../firmware/bootloader/program_0.hex", // Bootloader file of the system
+    parameter BOOT_SIZE         = 32'd64,   // Bootloader program size:         max 32  instructions
+    parameter MP_SIZE           = 32'd512,  // Main Program size:               max 512 instructions
+    parameter ISR_SIZE          = 32'd32,   // Interrupt Service Routine size:  max 16  instructions   
+    parameter BOOTLOADER_FILE   = "../../firmware/bootloader/bootloader.hex", // Bootloader file of the system
     // Image
     // -- Input frame (From the Camera)
     parameter I_FRM_COL_NUM     = 640,  // Input frame from camera: Number of columns
@@ -22,8 +25,13 @@ module dcasic #(
 
 ) (
     input                       sys_clk,
-    output                      sys_trap_o,
+    output                      sys_trap,
     input                       rst_n,
+`ifdef IMAGE_PROCESSOR_ENABLE
+    input                       iproc_clk,
+    output                      iproc_trap,
+    input                       iproc_rst_n,
+`endif
     // Camera RX Interface
     input   [DVP_DATA_W-1:0]    dvp_d_i,
     input                       dvp_href_i,
@@ -41,10 +49,19 @@ module dcasic #(
     inout   [DBI_IF_D_W-1:0]    dbi_d_o,
     // Camera Controller Interface
     output                      sio_c,
-    inout                       sio_d
+    inout                       sio_d,
+    // UART interface
+    output                      tx,
+    input                       rx
 
 `ifdef SILICON_DEBUG
     ,output                     debug_0
+    // ,output                     dvp_href_2
+    // ,output                     dvp_vsync_2
+    // ,output                     dvp_pclk_2
+    // ,output                     dvp_xclk_2
+    // ,output                     dvp_d_i_0
+    // ,output                     dvp_d_i_1
 `endif
 
 );
@@ -52,7 +69,7 @@ module dcasic #(
     // ================================== Configuration BUS ===================================
     // ========================================================================================
     localparam CBUS_MST_AMT             = 1;    // 1 master - processor
-    localparam CBUS_SLV_AMT             = 5;    // 5 slaves: IMEM + DSP + CAM + SCCB + DMA + UART
+    localparam CBUS_SLV_AMT             = 6;    // 5 slaves: IMEM + DSP + CAM + SCCB + DMA + UART
     localparam CBUS_MST_MAP_W           = $clog2(CBUS_MST_AMT);
     localparam CBUS_SLV_MAP_W           = $clog2(CBUS_SLV_AMT);
     localparam CBUS_DATA_W              = 32;
@@ -66,7 +83,14 @@ module dcasic #(
     localparam CBUS_OUST_AMT            = 2;    // Number of outstanding transacitons in the BUS
     // -- Instruction Memory
     localparam IMEM_PREFIX_ADDR         = 3'd0;
+    localparam IMEM_REGION_NUM          = 3; // Bootloader + Main program + ISR regions
+    localparam IMEM_BOOT_OFFSET         = 32'h0000_0000; // Bootloader program offset
+    localparam IMEM_MP_OFFSET           = 32'h0001_0000; // Main program offset
+    localparam IMEM_ISR_OFFSET          = 32'h0002_0000; // ISR program offset
     localparam IMEM_BASE_ADDR           = {IMEM_PREFIX_ADDR, 29'h0000_0000}; // Base address: 0x0000_0000
+    localparam IMEM_BOOT_BASE_ADDR      = IMEM_BASE_ADDR + IMEM_BOOT_OFFSET; // Base address: 0x0000_0000
+    localparam IMEM_MP_BASE_ADDR        = IMEM_BASE_ADDR + IMEM_MP_OFFSET;   // Base address: 0x0001_0000
+    localparam IMEM_ISR_BASE_ADDR       = IMEM_BASE_ADDR + IMEM_ISR_OFFSET;  // Base address: 0x0002_0000
     // -- Display TX configuration Memory
     localparam DSP_PREFIX_ADDR          = 3'd1;
     localparam DSP_BASE_ADDR            = {DSP_PREFIX_ADDR, 29'h0000_0000};  // Base address: 0x2000_0000
@@ -79,6 +103,9 @@ module dcasic #(
     // -- DMA Configuration interface
     localparam DMA_PREFIX_ADDR          = 3'd4;
     localparam DMA_BASE_ADDR            = {DMA_PREFIX_ADDR, 29'h0000_0000};  // Base address: 0x8000_0000
+    // -- UART configuration Memory
+    localparam UART_PREFIX_ADDR         = 3'd5;
+    localparam UART_BASE_ADDR           = {UART_PREFIX_ADDR, 29'h0000_0000}; // Base address: 0xA000_0000
 
     // ========================================================================================
     // ====================================== Image BUS =======================================
@@ -125,7 +152,7 @@ module dcasic #(
     // Image Memory
     localparam IGMEM_BASE_ADDR          = 32'h0000_0000;
     localparam IGMEM_WORD_W             = IBUS_DATA_W;  // Word width
-    localparam IGMEM_SIZE               = P_FRM_SIZE * P_PXL_W / IGMEM_WORD_W; // Memory size
+    localparam integer IGMEM_SIZE       = P_FRM_SIZE * P_PXL_W / IGMEM_WORD_W; // Memory size
 
     // Configuration BUS
     wire    [CBUS_M_ID_W*CBUS_MST_AMT-1:0]          cbus_m_awid_flat;
@@ -279,6 +306,9 @@ module dcasic #(
     wire                                            dbus_tready;
     wire    [DBUS_SLV_AMT-1:0]                      dbus_tready_slv;
     
+    // Interrupt signals
+    wire    [1:0]                                   dma_irq;    // Display DMA interrupt    [0]: TXN_DSP_COMPLETE irq   ||  [1]: TXN_IP_COMPLETED irq
+    wire    [1:0]                                   cam_irq;    // Camera IF interrupt:     [0]: FRAME_CAPTURED irq     ||  [1]: FRAME_STORED irq    
 
     // IP instantiation
     // -- Processor
@@ -298,20 +328,20 @@ module dcasic #(
         .ENABLE_MUL             (0),
         .ENABLE_FAST_MUL        (0),
         .ENABLE_DIV             (0),
-        .ENABLE_IRQ             (0),
-        .ENABLE_IRQ_QREGS       (0),
-        .ENABLE_IRQ_TIMER       (0),
+        .ENABLE_IRQ             (1),
+        .ENABLE_IRQ_QREGS       (1),
+        .ENABLE_IRQ_TIMER       (1),
         .ENABLE_TRACE           (0),
         .REGS_INIT_ZERO         (0),
-        .MASKED_IRQ             (),
+        .MASKED_IRQ             (32'hffff_fff0), // Use 4 interrupt sources
         .LATCHED_IRQ            (),
-        .PROGADDR_RESET         (IMEM_BASE_ADDR),
-        .PROGADDR_IRQ           (),
+        .PROGADDR_RESET         (IMEM_BOOT_BASE_ADDR),
+        .PROGADDR_IRQ           (IMEM_ISR_BASE_ADDR),
         .STACKADDR              ()
     ) proc (
         .clk                    (sys_clk),
         .resetn                 (rst_n),
-        .trap                   (sys_trap_o),
+        .trap                   (sys_trap),
         .mem_axi_awvalid        (cbus_m_awvalid[0]),
         .mem_axi_awready        (cbus_m_awready[0]),
         .mem_axi_awaddr         (cbus_m_awaddr[0]),
@@ -338,7 +368,7 @@ module dcasic #(
         .pcpi_rd                (),
         .pcpi_wait              (),
         .pcpi_ready             (),
-        .irq                    (),
+        .irq                    ({28'h00, dma_irq, cam_irq}),
         .eoi                    (),
         .trace_valid            (),
         .trace_data             ()
@@ -432,12 +462,16 @@ module dcasic #(
         .ATX_LEN_W              (CBUS_LEN_W),
         .ATX_SIZE_W             (CBUS_SIZE_W),
         .ATX_RESP_W             (CBUS_RESP_W),
+        .ATX_OUSTD_NUM          (2),        
         .MEM_BASE_ADDR          (IMEM_BASE_ADDR),
         .MEM_OFFSET             (1),
         .MEM_DATA_W             (CBUS_DATA_W),
-        .MEM_ADDR_W             (IMEM_W),       // 32bit x (2^10)
+        .MEM_ADDR_W             (CBUS_ADDR_W), // 32bit x (2^10)
         .MEM_LATENCY            (1),
-        .MEM_INIT_FILE          (BOOTLOADER_FILE)
+        .MEM_INIT_FILE          (BOOTLOADER_FILE),
+        .NUM_REGION             (IMEM_REGION_NUM),
+        .REGION_BASE_ADDR       ({{2'b00, IMEM_ISR_BASE_ADDR[31:2]},    {2'b00, IMEM_MP_BASE_ADDR[31:2]},   {2'b00, IMEM_BOOT_BASE_ADDR[31:2]}}), // Align to word-access
+        .REGION_SIZE            ({ISR_SIZE,                             MP_SIZE,                            BOOT_SIZE})
     ) im (
         .clk                    (sys_clk),
         .rst_n                  (rst_n),
@@ -612,9 +646,9 @@ module dcasic #(
         .m_bvalid_i             (ibus_bvalid),
         .m_bready_o             (ibus_bready),
 
-        .drc_irq                (),
+        .drc_irq                (cam_irq[0]), // FRAME_CAPTURED interrupt
         .drc_trap               (),
-        .dma_irq                (),
+        .dma_irq                (cam_irq[1]), // FRAME_STORED interrupt
         .dma_trap               ()
     );
 
@@ -660,6 +694,48 @@ module dcasic #(
         .s_rvalid_o             (cbus_s_rvalid[CC_PREFIX_ADDR]),
         .sio_c                  (sio_c),
         .sio_d                  (sio_d)
+    );
+    // -- UART
+    uart_ctrl #(
+        .INTERNAL_CLOCK         (INTERNAL_CLK),
+        .ATX_BASE_ADDR          (UART_BASE_ADDR),
+        .ATX_DATA_W             (8),
+        .ATX_ADDR_W             (CBUS_ADDR_W),
+        .ATX_ID_W               (CBUS_S_ID_W),
+        .ATX_LEN_W              (CBUS_LEN_W),
+        .ATX_SIZE_W             (CBUS_SIZE_W),
+        .ATX_RESP_W             (CBUS_RESP_W)
+    ) uart (
+        .clk                    (sys_clk),
+        .rst_n                  (rst_n),
+        .RX                     (rx),
+        .TX                     (tx),
+        .s_awid_i               (cbus_s_awid[UART_PREFIX_ADDR]),
+        .s_awaddr_i             (cbus_s_awaddr[UART_PREFIX_ADDR]),
+        .s_awburst_i            (cbus_s_awburst[UART_PREFIX_ADDR]),
+        .s_awlen_i              (cbus_s_awlen[UART_PREFIX_ADDR]),
+        .s_awvalid_i            (cbus_s_awvalid[UART_PREFIX_ADDR]),
+        .s_awready_o            (cbus_s_awready[UART_PREFIX_ADDR]),
+        .s_wdata_i              (cbus_s_wdata[UART_PREFIX_ADDR][7:0]),
+        .s_wlast_i              (cbus_s_wlast[UART_PREFIX_ADDR]),
+        .s_wvalid_i             (cbus_s_wvalid[UART_PREFIX_ADDR]),
+        .s_wready_o             (cbus_s_wready[UART_PREFIX_ADDR]),
+        .s_bid_o                (cbus_s_bid[UART_PREFIX_ADDR]),
+        .s_bresp_o              (cbus_s_bresp[UART_PREFIX_ADDR]),
+        .s_bvalid_o             (cbus_s_bvalid[UART_PREFIX_ADDR]),
+        .s_bready_i             (cbus_s_bready[UART_PREFIX_ADDR]),
+        .s_arid_i               (cbus_s_arid[UART_PREFIX_ADDR]),
+        .s_araddr_i             (cbus_s_araddr[UART_PREFIX_ADDR]),
+        .s_arburst_i            (cbus_s_arburst[UART_PREFIX_ADDR]),
+        .s_arlen_i              (cbus_s_arlen[UART_PREFIX_ADDR]),
+        .s_arvalid_i            (cbus_s_arvalid[UART_PREFIX_ADDR]),
+        .s_arready_o            (cbus_s_arready[UART_PREFIX_ADDR]),
+        .s_rid_o                (cbus_s_rid[UART_PREFIX_ADDR]),
+        .s_rdata_o              (cbus_s_rdata[UART_PREFIX_ADDR][7:0]),
+        .s_rresp_o              (cbus_s_rresp[UART_PREFIX_ADDR]),
+        .s_rlast_o              (cbus_s_rlast[UART_PREFIX_ADDR]),
+        .s_rvalid_o             (cbus_s_rvalid[UART_PREFIX_ADDR]),
+        .s_rready_i             (cbus_s_rready[UART_PREFIX_ADDR])
     );
 
     // -- DMA
@@ -760,7 +836,7 @@ module dcasic #(
         .m_tlast_o              (dbus_tlast),
         .m_tvalid_o             (dbus_tvalid),
         .m_tready_i             (dbus_tready),
-        .irq                    (),
+        .irq                    (dma_irq),
         .trap                   ()
     );
     // -- Image Memory
@@ -775,9 +851,11 @@ module dcasic #(
         .MEM_OFFSET             (1),
         .MEM_DATA_W             (IBUS_DATA_W),
         .MEM_ADDR_W             ($clog2(IGMEM_SIZE)),       // 32bit x (2^10)
-        .MEM_SIZE               (IGMEM_SIZE),
         .MEM_LATENCY            (1),
-        .MEM_INIT_FILE          ()
+        .MEM_INIT_FILE          (),
+        .NUM_REGION             (1),
+        .REGION_BASE_ADDR       (IGMEM_BASE_ADDR),
+        .REGION_SIZE            (IGMEM_SIZE)
     ) igm (
         .clk                    (sys_clk),
         .rst_n                  (rst_n),
@@ -855,7 +933,10 @@ module dcasic #(
     assign cbus_m_arid[0]      = {CBUS_M_ID_W{1'b0}};
     assign cbus_m_arburst[0]   = 2'b01; // Always increment
     assign cbus_m_arlen[0]     = {CBUS_LEN_W{1'b0}};
-    assign dbus_tready      = |dbus_tready_slv;
+    assign dbus_tready         = |dbus_tready_slv;
+`ifdef OPENLANE_DEBUG
+    assign cbus_s_rdata[UART_PREFIX_ADDR][31:8] = {3{cbus_s_rdata[UART_PREFIX_ADDR][7:0]}};
+`endif
     generate
         for(mst_idx = 0; mst_idx < CBUS_MST_AMT; mst_idx = mst_idx + 1) begin   : AXI4_MST
             assign cbus_m_awid_flat[CBUS_M_ID_W*(mst_idx+1)-1-:CBUS_M_ID_W]         = cbus_m_awid[mst_idx];
