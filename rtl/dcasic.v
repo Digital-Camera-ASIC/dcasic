@@ -8,7 +8,7 @@ module dcasic #(
     parameter DBI_IF_D_W        = 8,
     // Instruction Memory
     parameter IMEM_W            = 9,    // 512 instructions
-    parameter BOOTLOADER_FILE   = "C:/Users/datph/Desktop/Thesis/dcasic2/dcasic/firmware/bootloader/program_0.hex", // Bootloader file of the system
+    parameter BOOTLOADER_FILE   = "../firmware/bootloader/program_0.hex", // Bootloader file of the system
     // Image
     // -- Input frame (From the Camera)
     parameter I_FRM_COL_NUM     = 640,  // Input frame from camera: Number of columns
