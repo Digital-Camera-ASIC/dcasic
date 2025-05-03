@@ -120,6 +120,16 @@ module dcasic_tb;
     initial begin : UART_SEQ
         int file;
         string line;
+        int fd;
+        fd = $fopen(`BITSTREAM_PATH, "r");
+        if (fd) begin
+            $display("[INFO]: Read bitstream file successfully");
+        end
+        else begin
+            $display("[ERROR]: Bitstream file does not exist at path: %s", `BITSTREAM_PATH);
+            $finish;
+        end
+        $fclose(fd);
         file = $fopen(`BITSTREAM_PATH, "r");  // Mở file để đọc
         if (file) begin
             while (!$feof(file)) begin
@@ -288,6 +298,16 @@ module dcasic_tb;
     reg [15:0] input_img [0:640*480-1];
 
     initial begin : DVP_SEQ
+        int fd;
+        fd = $fopen (`IMG_I_PATH, "r");
+        if (fd) begin
+            $display("[INFO]: Read input image successfully");
+        end
+        else begin     
+            $display("[ERROR]: Input image file does not exist at path: %s", `IMG_I_PATH);
+            $finish;
+        end
+        $fclose(fd);
         $readmemh(`IMG_I_PATH, input_img);
     end
 
